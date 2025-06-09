@@ -1,7 +1,6 @@
 package com.liquidacion.backend.services;
 
-import com.liquidacion.backend.DTO.ConceptoInputDTO;
-import com.liquidacion.backend.DTO.LiquidacionSueldoDTO;
+import com.liquidacion.backend.DTO.*;
 import com.liquidacion.backend.entities.*;
 import com.liquidacion.backend.repository.*;
 import jakarta.transaction.Transactional;
@@ -12,6 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -106,5 +106,65 @@ public class LiquidacionSueldosService {
         concepto.setMontoUnitario(montoUnitario);
         concepto.setTotal(total);
         pagoConceptoRepository.save(concepto);
+    }
+
+    public PagoSueldoDetalleDTO obtenerPagoConDetalle(Integer idPago){
+        PagoSueldo pago = pagoSueldoRepository.findById(Long.valueOf(idPago))
+                .orElseThrow(() -> new RuntimeException("Pago de concepto no encontrado"));
+        PagoSueldoDetalleDTO dto = new PagoSueldoDetalleDTO();
+        dto.setIdPago(pago.getIdPago());
+        dto.setPeriodoPago(pago.getPeriodoPago());
+        dto.setFechaPago(pago.getFechaPago());
+        dto.setTotal(pago.getTotal());
+
+        Empleado e = pago.getEmpleado();
+        dto.setLegajoEmpleado(e.getLegajo());
+        dto.setNombreEmpleado(e.getNombre());
+        dto.setApellidoEmpleado(e.getApellido());
+        dto.setCategoriaEmpleado(e.getCategoria().getNombre());
+
+        List<PagoConceptoDTO> conceptos = pagoConceptoRepository.findByPago(pago)
+                .stream()
+                .map(pc -> {
+                    PagoConceptoDTO c = new PagoConceptoDTO();
+                    c.setTipoConcepto(pc.getTipoConcepto().name());
+                    c.setUnidades(pc.getUnidades());
+                    c.setMontoUnitario(pc.getMontoUnitario());
+                    c.setTotal(pc.getTotal());
+
+                    // Obtener nombre del concepto según tipo
+                    if (pc.getTipoConcepto() == TipoConcepto.BONIFICACION_FIJA) {
+                        bonificacionFijaRepository.findById(pc.getIdReferencia())
+                                .ifPresent(b -> c.setNombre(b.getNombre()));
+                    } else if (pc.getTipoConcepto() == TipoConcepto.BONIFICACION_VARIABLE) {
+                        c.setNombre("Bonificación Variable");
+                    } else if (pc.getTipoConcepto() == TipoConcepto.DESCUENTO) {
+                        descuentoRepository.findById(pc.getIdReferencia())
+                                .ifPresent(d -> c.setNombre(d.getNombre()));
+                    } else if (pc.getTipoConcepto().name().equals("BASICO")) {
+                        c.setNombre("Sueldo Básico");
+                    }
+
+                    return c;
+                }).collect(Collectors.toList());
+
+        dto.setConceptos(conceptos);
+        return dto;
+    }
+
+    public List<PagoSueldoDTO> listarTodosLosPagos() {
+        List<PagoSueldo> pagos = pagoSueldoRepository.findAll();
+
+        return pagos.stream().map(pago -> {
+            PagoSueldoDTO dto = new PagoSueldoDTO();
+            dto.setIdPago(pago.getIdPago());
+            dto.setLegajoEmpleado(pago.getEmpleado().getLegajo());
+            dto.setNombreEmpleado(pago.getEmpleado().getNombre());
+            dto.setApellidoEmpleado(pago.getEmpleado().getApellido());
+            dto.setPeriodoPago(pago.getPeriodoPago());
+            dto.setFechaPago(pago.getFechaPago());
+            dto.setTotal(pago.getTotal());
+            return dto;
+        }).collect(Collectors.toList());
     }
 }

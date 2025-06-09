@@ -1,6 +1,8 @@
 package com.liquidacion.backend.controller;
 
 import com.liquidacion.backend.DTO.LiquidacionSueldoDTO;
+import com.liquidacion.backend.DTO.PagoSueldoDTO;
+import com.liquidacion.backend.DTO.PagoSueldoDetalleDTO;
 import com.liquidacion.backend.entities.PagoSueldo;
 import com.liquidacion.backend.services.LiquidacionSueldosService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,18 @@ import java.util.List;
 public class LiquidacionController {
 
     private final LiquidacionSueldosService liquidacionSueldosService;
+
+    @GetMapping
+    public ResponseEntity<List<PagoSueldoDTO>> listarPagos() {
+        List<PagoSueldoDTO> pagos = liquidacionSueldosService.listarTodosLosPagos();
+        return ResponseEntity.ok(pagos);
+    }
+
+    @GetMapping("(/{idPago})")
+    public ResponseEntity<PagoSueldoDetalleDTO> obtenerDetallePago(@PathVariable Integer idPago) {
+        PagoSueldoDetalleDTO detalle = liquidacionSueldosService.obtenerPagoConDetalle(idPago);
+        return ResponseEntity.ok(detalle);
+    }
 
     @PostMapping
     public ResponseEntity<PagoSueldo> liquidarSueldo(@RequestBody LiquidacionSueldoDTO dto) {
