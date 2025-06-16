@@ -15,7 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 public class Empleado {
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @Column(name = "legajo")
     private Integer legajo;
 
     private String nombre;
@@ -33,6 +33,10 @@ public class Empleado {
     private Categoria categoria;
 
     private String sexo;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gremio", nullable = false)
+    private Gremio gremio;
 
     @OneToMany(mappedBy = "empleado", cascade = CascadeType.ALL)
     private List<PagoSueldo> pagos;

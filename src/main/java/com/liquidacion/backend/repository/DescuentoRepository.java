@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface DescuentoRepository extends JpaRepository<Descuento, Integer> {
-    List<PagoSueldo> findByEmpleado_Legajo(Integer legajo);
+    //List<PagoSueldo> findByEmpleado_Legajo(Integer legajo);
 }

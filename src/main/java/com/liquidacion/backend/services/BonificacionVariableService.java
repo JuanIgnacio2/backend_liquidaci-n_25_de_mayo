@@ -38,6 +38,6 @@ public class BonificacionVariableService {
     }
 
     public List<BonificacionVariable> obtenerPorCategoriaYArea(Integer categoriaId, Integer areaId){
-        return bonificacionVariableRepository.findByCategoria_IdAndArea_Id(categoriaId, areaId);
+        return bonificacionVariableRepository.findByCategoria_IdCategoriaAndArea_Id(categoriaId, areaId);
     }
 }

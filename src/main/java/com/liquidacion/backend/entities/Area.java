@@ -15,6 +15,7 @@ import java.util.List;
 public class Area {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_area")
     private Integer id;
 
     private String nombre;

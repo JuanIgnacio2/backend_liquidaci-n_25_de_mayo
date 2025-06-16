@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface BonificacionVariableRepository extends JpaRepository<BonificacionVariable, Integer> {
-    List<BonificacionVariable> findByCategoria_IdAndArea_Id(Integer categoriaId, Integer areaId);
+    List<BonificacionVariable> findByCategoria_IdCategoriaAndArea_Id(Integer categoriaId, Integer areaId);
 }
