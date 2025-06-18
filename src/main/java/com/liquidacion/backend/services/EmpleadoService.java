@@ -37,10 +37,17 @@ public class EmpleadoService {
 
     private EmpleadoListDTO mapToListDTO(Empleado e){
         EmpleadoListDTO dto = new EmpleadoListDTO();
+        //Info básica
         dto.setLegajo(e.getLegajo());
         dto.setNombre(e.getNombre());
         dto.setApellido(e.getApellido());
         dto.setCuil(e.getCuil());
+
+        //Info complementaria
+        dto.setInicioActividad(e.getInicioActividad());
+        dto.setDomicilio(e.getDomicilio());
+        dto.setBanco(e.getBanco());
+        dto.setSexo(e.getSexo());
 
         // Evitamos NPE si aún no hay área / categoría
         dto.setCategoria(e.getCategoria() != null ? e.getCategoria().getNombre() : null);
@@ -51,6 +58,9 @@ public class EmpleadoService {
     }
 
     public Empleado guardar(EmpleadoCreateDTO dto){
+        if (dto.getLegajo() == null)
+            throw new IllegalArgumentException("El legajo no puede ser null");
+
         if(empleadoRepository.existsById(dto.getLegajo())){
             throw new RuntimeException("El empleado ya existe");
         }

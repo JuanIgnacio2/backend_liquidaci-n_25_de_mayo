@@ -21,7 +21,7 @@ public class EmpleadoCreateDTO {
     @NotBlank
     private String cuil;
 
-    @NotBlank
+    @NotNull
     private LocalDate inicioActividad;
 
     private String domicilio;

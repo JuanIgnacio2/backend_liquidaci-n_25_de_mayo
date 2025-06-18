@@ -21,5 +21,5 @@ public class Area {
     private String nombre;
 
     @OneToMany(mappedBy = "area")
-    private List<BonificacionVariable> bonificaciones;
+    private List<BonificacionArea> bonificaciones;
 }

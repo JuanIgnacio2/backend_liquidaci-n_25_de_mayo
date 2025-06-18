@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class LiquidacionSueldosService {
     private final EmpleadoRepository empleadoRepository;
     private final BonificacionFijaRepository bonificacionFijaRepository;
-    private final BonificacionVariableRepository bonificacionVariableRepository;
+    private final BonificacionAreaRepository bonificacionAreaRepository;
     private final DescuentoRepository descuentoRepository;
     private final PagoSueldoRepository pagoSueldoRepository;
     private final PagoConceptoRepository pagoConceptoRepository;
@@ -69,7 +69,7 @@ public class LiquidacionSueldosService {
                     break;
 
                 case "BONIFICACION_VARIABLE":
-                    BonificacionVariable bonVar = bonificacionVariableRepository.findById(idRef)
+                    BonificacionArea bonVar = bonificacionAreaRepository.findById(idRef)
                             .orElseThrow(() -> new RuntimeException("Bonificacion no encontrada"));
                     montoUnitario = basico.multiply(bonVar.getPorcentaje().divide(BigDecimal.valueOf(100)));
                     totalBonificaciones = totalBonificaciones.add(montoUnitario.multiply(BigDecimal.valueOf(unidades)));
