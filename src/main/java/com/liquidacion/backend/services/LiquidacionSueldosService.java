@@ -5,7 +5,6 @@ import com.liquidacion.backend.entities.*;
 import com.liquidacion.backend.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;

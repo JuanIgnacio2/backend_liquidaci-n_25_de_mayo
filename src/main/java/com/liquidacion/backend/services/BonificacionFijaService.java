@@ -3,7 +3,6 @@ package com.liquidacion.backend.services;
 import com.liquidacion.backend.DTO.BonificacionFijaDTO;
 import com.liquidacion.backend.entities.BonificacionFija;
 import com.liquidacion.backend.repository.BonificacionFijaRepository;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

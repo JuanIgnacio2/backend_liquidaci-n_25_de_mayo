@@ -3,7 +3,6 @@ package com.liquidacion.backend.services;
 import com.liquidacion.backend.DTO.EmpleadoCreateDTO;
 import com.liquidacion.backend.DTO.EmpleadoListDTO;
 import com.liquidacion.backend.DTO.EmpleadoUpdateDTO;
-import com.liquidacion.backend.controller.CategoriaController;
 import com.liquidacion.backend.entities.Area;
 import com.liquidacion.backend.entities.Categoria;
 import com.liquidacion.backend.entities.Empleado;

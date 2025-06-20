@@ -2,9 +2,7 @@ package com.liquidacion.backend.controller;
 
 import com.liquidacion.backend.DTO.BonificacionAreaDTO;
 import com.liquidacion.backend.services.BonificacionAreaService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
