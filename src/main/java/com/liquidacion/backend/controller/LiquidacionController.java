@@ -5,6 +5,7 @@ import com.liquidacion.backend.DTO.PagoSueldoDTO;
 import com.liquidacion.backend.DTO.PagoSueldoDetalleDTO;
 import com.liquidacion.backend.entities.PagoSueldo;
 import com.liquidacion.backend.services.LiquidacionSueldosService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/liquidaciones")
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class LiquidacionController {
 
@@ -32,7 +34,7 @@ public class LiquidacionController {
     }
 
     @PostMapping
-    public ResponseEntity<PagoSueldo> liquidarSueldo(@RequestBody LiquidacionSueldoDTO dto) {
+    public ResponseEntity<PagoSueldo> liquidarSueldo(@Valid @RequestBody LiquidacionSueldoDTO dto) {
         LocalDate fechaPago = LocalDate.now();
         PagoSueldo pago = liquidacionSueldosService.liquidarSueldo(dto, fechaPago);
         return ResponseEntity.ok(pago);

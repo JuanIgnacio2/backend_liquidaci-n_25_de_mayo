@@ -50,8 +50,14 @@ public class EmpleadoService {
         dto.setSexo(e.getSexo());
 
         // Evitamos NPE si aún no hay área / categoría
-        dto.setCategoria(e.getCategoria() != null ? e.getCategoria().getNombre() : null);
-        dto.setArea(e.getArea() != null ? e.getArea().getNombre() : null);
+        if(e.getCategoria() != null) {
+            dto.setIdCategoria(e.getCategoria().getIdCategoria());
+            dto.setCategoria(e.getCategoria() != null ? e.getCategoria().getNombre() : null);
+        }
+        if(e.getArea() != null) {
+            dto.setIdArea(e.getArea().getId());
+            dto.setArea(e.getArea() != null ? e.getArea().getNombre() : null);
+        }
 
         dto.setGremio(e.getGremio());
         return dto;

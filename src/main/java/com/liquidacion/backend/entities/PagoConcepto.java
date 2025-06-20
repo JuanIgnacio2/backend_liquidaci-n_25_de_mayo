@@ -26,7 +26,7 @@ public class PagoConcepto {
     @Enumerated(EnumType.STRING)
     private TipoConcepto tipoConcepto;
 
-    @Column(name = "id_referencia")
+    @Column(name = "id_referencia", nullable = true)
     private Integer idReferencia;
 
     private Integer unidades;

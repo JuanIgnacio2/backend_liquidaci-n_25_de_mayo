@@ -14,8 +14,10 @@ public class EmpleadoListDTO {
     private LocalDate inicioActividad;
     private String domicilio;
     private String banco;
+    private Integer idCategoria;
     private String categoria;
     private String sexo;
+    private Integer idArea;
     private String area;
     private Gremio gremio;
 }

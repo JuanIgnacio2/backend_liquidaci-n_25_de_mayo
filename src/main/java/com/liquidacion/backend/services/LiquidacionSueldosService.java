@@ -5,6 +5,7 @@ import com.liquidacion.backend.entities.*;
 import com.liquidacion.backend.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -22,6 +23,7 @@ public class LiquidacionSueldosService {
     private final DescuentoRepository descuentoRepository;
     private final PagoSueldoRepository pagoSueldoRepository;
     private final PagoConceptoRepository pagoConceptoRepository;
+    private final CategoriaRepository categoriaRepository;
 
     public Optional<PagoSueldo> obtenerPagoPorId(Long idPago){
         return pagoSueldoRepository.findById(idPago);
@@ -47,10 +49,12 @@ public class LiquidacionSueldosService {
         pago.setEmpleado(empleado);
         pago.setPeriodoPago(dto.getPeriodoPago());
         pago.setFechaPago(fechaPago);
+        pago.setTotal(BigDecimal.ZERO);
         pago = pagoSueldoRepository.save(pago);
 
         //Concepto 1: Sueldo básico
-        crearConcepto(pago, "BASICO", null, 1, basico, basico);
+        //crearConcepto(pago, "BASICO", null, 1, basico, basico);
+        crearConcepto(pago, TipoConcepto.CATEGORIA.name(), empleado.getCategoria().getIdCategoria(), 1, basico, basico);
 
         //Bonificaciones y descuentos
         for(ConceptoInputDTO conceptoDTO : dto.getConceptos()){
@@ -78,10 +82,15 @@ public class LiquidacionSueldosService {
                 case "DESCUENTO":
                     Descuento desc = descuentoRepository.findById(idRef)
                             .orElseThrow(() -> new RuntimeException("Descuento no encontrado"));
-                    BigDecimal montoDescuento = desc.getPorcentaje().divide(BigDecimal.valueOf(100));
-                    totalDescuentos = totalDescuentos.add(montoDescuento.multiply(BigDecimal.valueOf(unidades)));
+                    BigDecimal base = basico.add(totalBonificaciones);
+                    montoUnitario = base.multiply(desc.getPorcentaje()
+                            .divide(BigDecimal.valueOf(100)));
+                    totalDescuentos = totalDescuentos.add(montoUnitario.multiply(BigDecimal.valueOf(unidades)));
                     break;
 
+                case "CATEGORIA":
+                    // Si se encuentra "CATEGORIA", se omite, porque ya se añadió antes del for
+                    continue;
                 default:
                     throw new RuntimeException("Tipo de concepto no encontrado");
             }
@@ -141,8 +150,9 @@ public class LiquidacionSueldosService {
                     } else if (pc.getTipoConcepto() == TipoConcepto.DESCUENTO) {
                         descuentoRepository.findById(pc.getIdReferencia())
                                 .ifPresent(d -> c.setNombre(d.getNombre()));
-                    } else if (pc.getTipoConcepto().name().equals("BASICO")) {
-                        c.setNombre("Sueldo Básico");
+                    } else if (pc.getTipoConcepto() == TipoConcepto.CATEGORIA) {
+                        categoriaRepository.findById(pc.getIdReferencia())
+                                .ifPresent(cat -> c.setNombre("Sueldo Básico - " + cat.getNombre()));
                     }
 
                     return c;
