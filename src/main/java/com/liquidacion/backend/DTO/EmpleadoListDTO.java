@@ -4,6 +4,7 @@ import com.liquidacion.backend.entities.Gremio;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 public class EmpleadoListDTO {
@@ -17,7 +18,7 @@ public class EmpleadoListDTO {
     private Integer idCategoria;
     private String categoria;
     private String sexo;
-    private Integer idArea;
-    private String area;
+    private List<Integer> idAreas;
+    private List<String> nombreAreas;
     private Gremio gremio;
 }

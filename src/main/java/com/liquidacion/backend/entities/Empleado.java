@@ -41,7 +41,11 @@ public class Empleado {
     @OneToMany(mappedBy = "empleado", cascade = CascadeType.ALL)
     private List<PagoSueldo> pagos;
 
-    @ManyToOne
-    @JoinColumn(name = "id_area")
-    private Area area;
+    @ManyToMany
+    @JoinTable(
+            name = "empleado_area",
+            joinColumns = @JoinColumn(name = "legajo"),
+            inverseJoinColumns = @JoinColumn(name = "id_area")
+    )
+    private List<Area> areas;
 }

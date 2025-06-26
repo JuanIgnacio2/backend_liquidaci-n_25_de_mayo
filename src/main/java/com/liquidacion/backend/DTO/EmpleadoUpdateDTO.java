@@ -5,6 +5,7 @@ import com.liquidacion.backend.entities.Gremio;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -17,7 +18,7 @@ public class EmpleadoUpdateDTO {
     private String domicilio;
     private String banco;
     private Integer idCategoria;
-    private Integer idArea;
+    private List<Integer> idAreas;
     private String sexo;
     private Gremio gremio;
 }

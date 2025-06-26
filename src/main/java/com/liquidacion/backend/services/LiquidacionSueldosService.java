@@ -55,7 +55,24 @@ public class LiquidacionSueldosService {
         //crearConcepto(pago, "BASICO", null, 1, basico, basico);
         crearConcepto(pago, TipoConcepto.CATEGORIA.name(), empleado.getCategoria().getIdCategoria(), 1, basico, basico);
 
-        //Bonificaciones y descuentos
+        //Concepto 2: Bonificaciones de área
+        //Registrar id de bonificaciones de area (agregadas en la interfaz de liquidar sueldos) para no repetir
+        List<Integer> bonificacionesVariablesManual = dto.getConceptos().stream()
+                .filter(c -> c.getTipoConcepto().equals("BONIFICACION_VARIABLE"))
+                .map(ConceptoInputDTO::getIdReferencia)
+                .toList();
+
+        //Areas preestablecidas de el empleado
+        for(Area area : empleado.getAreas()){
+            List<BonificacionArea> bonificacionesArea = bonificacionAreaRepository.findByArea(area);
+            for(BonificacionArea bonVar : bonificacionesArea){
+                BigDecimal monto = basico.multiply(bonVar.getPorcentaje().divide(BigDecimal.valueOf(100)));
+                totalBonificaciones = totalBonificaciones.add(monto);
+                crearConcepto(pago, TipoConcepto.BONIFICACION_VARIABLE.name(), bonVar.getIdBonificacionVariable(), 1, monto, monto );
+            }
+        }
+
+        //Bonificaciones y descuentos enviados desde el frontend
         for(ConceptoInputDTO conceptoDTO : dto.getConceptos()){
             String tipo = conceptoDTO.getTipoConcepto();
             Integer idRef = conceptoDTO.getIdReferencia();

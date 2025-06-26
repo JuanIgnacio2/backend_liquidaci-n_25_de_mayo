@@ -53,9 +53,14 @@ public class EmpleadoService {
             dto.setIdCategoria(e.getCategoria().getIdCategoria());
             dto.setCategoria(e.getCategoria() != null ? e.getCategoria().getNombre() : null);
         }
-        if(e.getArea() != null) {
-            dto.setIdArea(e.getArea().getId());
-            dto.setArea(e.getArea() != null ? e.getArea().getNombre() : null);
+        if(e.getAreas() != null) {
+            dto.setIdAreas(e.getAreas().stream()
+                    .map(Area::getId)
+                    .collect(Collectors.toList()));
+
+            dto.setNombreAreas(e.getAreas().stream()
+                    .map(Area::getNombre)
+                    .collect(Collectors.toList()));
         }
 
         dto.setGremio(e.getGremio());
@@ -79,9 +84,13 @@ public class EmpleadoService {
         e.setDomicilio(dto.getDomicilio());
         e.setBanco(dto.getBanco());
         e.setCategoria(catRepo.getById(dto.getIdCategoria()));
-        e.setArea(areaRepo.getById(dto.getIdArea()));
         e.setSexo(dto.getSexo());
         e.setGremio(dto.getGremio());
+
+        if(dto.getIdArea() != null && !dto.getIdArea().isEmpty()) {
+            List<Area> areas = areaRepo.findAllById(dto.getIdArea());
+            e.setAreas(areas);
+        }
 
         return empleadoRepository.save(e);
     }
@@ -104,10 +113,9 @@ public class EmpleadoService {
             empleado.setCategoria(categoria);
         }
 
-        if (dto.getIdArea() != null) {
-            Area area = areaRepo.findById(dto.getIdArea())
-                    .orElseThrow(() -> new RuntimeException("Área no encontrada"));
-            empleado.setArea(area);
+        if (dto.getIdAreas() != null && !dto.getIdAreas().isEmpty()) {
+            List<Area> area = areaRepo.findAllById(dto.getIdAreas());
+            empleado.setAreas(area);
         }
 
         if (dto.getSexo() != null)             empleado.setSexo(dto.getSexo());

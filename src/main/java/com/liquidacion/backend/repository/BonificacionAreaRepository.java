@@ -1,5 +1,6 @@
 package com.liquidacion.backend.repository;
 
+import com.liquidacion.backend.entities.Area;
 import com.liquidacion.backend.entities.BonificacionArea;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -11,4 +12,5 @@ import java.util.Optional;
 public interface BonificacionAreaRepository extends JpaRepository<BonificacionArea, Integer> {
     List<BonificacionArea> findByArea_Id(Integer idArea);
     Optional<BonificacionArea> findByArea_IdAndCategoria_IdCategoria(Integer categoriaId, Integer areaId);
+    List<BonificacionArea> findByArea(Area area);
 }
