@@ -1,7 +1,7 @@
 package com.liquidacion.backend.controller;
 
 import com.liquidacion.backend.DTO.LiquidacionSueldoDTO;
-import com.liquidacion.backend.DTO.PagoSueldoDTO;
+import com.liquidacion.backend.DTO.PagoSueldoResumenDTO;
 import com.liquidacion.backend.DTO.PagoSueldoDetalleDTO;
 import com.liquidacion.backend.entities.PagoSueldo;
 import com.liquidacion.backend.services.LiquidacionSueldosService;
@@ -22,12 +22,12 @@ public class LiquidacionController {
     private final LiquidacionSueldosService liquidacionSueldosService;
 
     @GetMapping
-    public ResponseEntity<List<PagoSueldoDTO>> listarPagos() {
-        List<PagoSueldoDTO> pagos = liquidacionSueldosService.listarTodosLosPagos();
+    public ResponseEntity<List<PagoSueldoResumenDTO>> listarPagos() {
+        List<PagoSueldoResumenDTO> pagos = liquidacionSueldosService.listarTodosLosPagos();
         return ResponseEntity.ok(pagos);
     }
 
-    @GetMapping("(/{idPago})")
+    @GetMapping("/{idPago}")
     public ResponseEntity<PagoSueldoDetalleDTO> obtenerDetallePago(@PathVariable Integer idPago) {
         PagoSueldoDetalleDTO detalle = liquidacionSueldosService.obtenerPagoConDetalle(idPago);
         return ResponseEntity.ok(detalle);
@@ -38,11 +38,6 @@ public class LiquidacionController {
         LocalDate fechaPago = LocalDate.now();
         PagoSueldo pago = liquidacionSueldosService.liquidarSueldo(dto, fechaPago);
         return ResponseEntity.ok(pago);
-    }
-
-    @GetMapping("/{idPago}")
-    public ResponseEntity<PagoSueldo> obtenerPago(@PathVariable Integer idPago){
-        return ResponseEntity.of(liquidacionSueldosService.obtenerPagoPorId(Long.valueOf(idPago)));
     }
 
     @GetMapping("/empleado/{legajo}")

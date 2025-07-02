@@ -6,11 +6,12 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
-public class PagoSueldoDTO {
+public class PagoSueldoResumenDTO {
     private Integer idPago;
     private Integer legajoEmpleado;
     private String nombreEmpleado;
     private String apellidoEmpleado;
+
     private LocalDate fechaPago;
     private String periodoPago;
     private BigDecimal total;

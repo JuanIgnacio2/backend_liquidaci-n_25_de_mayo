@@ -67,8 +67,13 @@ public class BonificacionAreaService {
     }
 
     public BigDecimal obtenerPorcentaje(Integer categoriaId, Integer areaId){
-        return bonificacionAreaRepository.findByArea_IdAndCategoria_IdCategoria(categoriaId, areaId)
+        List<BonificacionArea> bonificaciones = bonificacionAreaRepository.findByArea_IdAndCategoria_IdCategoria(categoriaId, areaId);
+
+        if(bonificaciones.isEmpty()){
+            return BigDecimal.ZERO;
+        }
+        return bonificaciones.stream()
                 .map(BonificacionArea::getPorcentaje)
-                .orElseThrow(()-> new RuntimeException("No se puede obtener porcentaje."));
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

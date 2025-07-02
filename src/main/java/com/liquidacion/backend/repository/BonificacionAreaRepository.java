@@ -11,6 +11,6 @@ import java.util.Optional;
 @Repository
 public interface BonificacionAreaRepository extends JpaRepository<BonificacionArea, Integer> {
     List<BonificacionArea> findByArea_Id(Integer idArea);
-    Optional<BonificacionArea> findByArea_IdAndCategoria_IdCategoria(Integer categoriaId, Integer areaId);
+    List<BonificacionArea> findByArea_IdAndCategoria_IdCategoria(Integer categoriaId, Integer areaId);
     List<BonificacionArea> findByArea(Area area);
 }

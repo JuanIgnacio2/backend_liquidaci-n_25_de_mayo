@@ -2,13 +2,11 @@ package com.liquidacion.backend.controller;
 
 import com.liquidacion.backend.DTO.CategoriaCreateDTO;
 import com.liquidacion.backend.DTO.CategoriaListDTO;
-import com.liquidacion.backend.entities.Categoria;
 import com.liquidacion.backend.services.CategoriaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/categorias")

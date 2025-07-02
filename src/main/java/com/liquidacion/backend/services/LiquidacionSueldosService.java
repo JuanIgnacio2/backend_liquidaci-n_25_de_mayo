@@ -9,8 +9,10 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -62,13 +64,18 @@ public class LiquidacionSueldosService {
                 .map(ConceptoInputDTO::getIdReferencia)
                 .toList();
 
+        Set<Integer> bonifVarYaAgregadas = new HashSet<>();
+
         //Areas preestablecidas de el empleado
         for(Area area : empleado.getAreas()){
             List<BonificacionArea> bonificacionesArea = bonificacionAreaRepository.findByArea(area);
             for(BonificacionArea bonVar : bonificacionesArea){
-                BigDecimal monto = basico.multiply(bonVar.getPorcentaje().divide(BigDecimal.valueOf(100)));
-                totalBonificaciones = totalBonificaciones.add(monto);
-                crearConcepto(pago, TipoConcepto.BONIFICACION_VARIABLE.name(), bonVar.getIdBonificacionVariable(), 1, monto, monto );
+                if(bonVar.getCategoria().getIdCategoria().equals(empleado.getCategoria().getIdCategoria())) {
+                    BigDecimal monto = basico.multiply(bonVar.getPorcentaje().divide(BigDecimal.valueOf(100)));
+                    totalBonificaciones = totalBonificaciones.add(monto);
+                    crearConcepto(pago, TipoConcepto.BONIFICACION_VARIABLE.name(), bonVar.getIdBonificacionVariable(), 1, monto, monto);
+                    bonifVarYaAgregadas.add(bonVar.getIdBonificacionVariable());
+                }
             }
         }
 
@@ -89,11 +96,12 @@ public class LiquidacionSueldosService {
                     break;
 
                 case "BONIFICACION_VARIABLE":
-                    BonificacionArea bonVar = bonificacionAreaRepository.findById(idRef)
+                    /*BonificacionArea bonVar = bonificacionAreaRepository.findById(idRef)
                             .orElseThrow(() -> new RuntimeException("Bonificacion no encontrada"));
                     montoUnitario = basico.multiply(bonVar.getPorcentaje().divide(BigDecimal.valueOf(100)));
                     totalBonificaciones = totalBonificaciones.add(montoUnitario.multiply(BigDecimal.valueOf(unidades)));
-                    break;
+                    break;*/
+                    continue;
 
                 case "DESCUENTO":
                     Descuento desc = descuentoRepository.findById(idRef)
@@ -178,11 +186,11 @@ public class LiquidacionSueldosService {
         return dto;
     }
 
-    public List<PagoSueldoDTO> listarTodosLosPagos() {
+    public List<PagoSueldoResumenDTO> listarTodosLosPagos() {
         List<PagoSueldo> pagos = pagoSueldoRepository.findAll();
 
         return pagos.stream().map(pago -> {
-            PagoSueldoDTO dto = new PagoSueldoDTO();
+            PagoSueldoResumenDTO dto = new PagoSueldoResumenDTO();
             dto.setIdPago(pago.getIdPago());
             dto.setLegajoEmpleado(pago.getEmpleado().getLegajo());
             dto.setNombreEmpleado(pago.getEmpleado().getNombre());
