@@ -7,5 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface EmpleadoConceptoRepository extends JpaRepository<EmpleadoConcepto, Long> {
-    List<EmpleadoConcepto> findByLegajo(Integer legajo);
+    List<EmpleadoConcepto> findByEmpleado_Legajo(Integer legajo);
+    void deleteAllByEmpleado(Empleado empleado);
 }

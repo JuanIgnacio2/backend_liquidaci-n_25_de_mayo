@@ -1,6 +1,9 @@
 package com.liquidacion.backend.DTO;
 
+import com.liquidacion.backend.entities.EstadoEmpleado;
 import com.liquidacion.backend.entities.Gremio;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.OneToMany;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -20,5 +23,8 @@ public class EmpleadoListDTO {
     private String sexo;
     private List<Integer> idAreas;
     private List<String> nombreAreas;
+    private EstadoEmpleado estado;
     private Gremio gremio;
+
+    private List<EmpleadoConceptoDTO> conceptosAsignados;
 }

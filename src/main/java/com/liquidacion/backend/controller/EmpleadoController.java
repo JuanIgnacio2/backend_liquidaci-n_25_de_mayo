@@ -39,7 +39,7 @@ public class EmpleadoController {
     }
 
     @PutMapping("/{legajo}")
-    public Empleado actualizarEmpleado(@PathVariable Integer legajo, @Valid @RequestBody EmpleadoUpdateDTO dto){
+    public Empleado actualizarEmpleado(@PathVariable Integer legajo, @Valid @RequestBody EmpleadoUpdateDTO dto) {
         return empleadoService.actualizar(legajo, dto);
     }
 

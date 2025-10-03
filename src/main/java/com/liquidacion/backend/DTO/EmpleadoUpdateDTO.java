@@ -1,6 +1,7 @@
 package com.liquidacion.backend.DTO;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.liquidacion.backend.entities.EstadoEmpleado;
 import com.liquidacion.backend.entities.Gremio;
 import lombok.Data;
 
@@ -19,6 +20,9 @@ public class EmpleadoUpdateDTO {
     private String banco;
     private Integer idCategoria;
     private List<Integer> idAreas;
+    private EstadoEmpleado estado;
     private String sexo;
     private Gremio gremio;
+
+    private List<EmpleadoConceptoDTO> conceptosAsignados;
 }

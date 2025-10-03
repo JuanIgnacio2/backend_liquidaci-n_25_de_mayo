@@ -28,7 +28,7 @@ public class EmpleadoConceptoController {
 
     @GetMapping("/por-legajo/{legajo}")
     public ResponseEntity<List<EmpleadoConceptoDTO>> listarPorLegajo(@PathVariable Integer legajo){
-        return ResponseEntity.ok(empleadoConceptoService.buscarPorLegajo(legajo));
+        return ResponseEntity.ok(empleadoConceptoService.findByEmpleado_Legajo(legajo));
     }
 
     @PutMapping("/modificar")

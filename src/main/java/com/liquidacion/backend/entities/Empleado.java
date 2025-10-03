@@ -48,4 +48,11 @@ public class Empleado {
             inverseJoinColumns = @JoinColumn(name = "id_area")
     )
     private List<Area> areas;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private EstadoEmpleado estado = EstadoEmpleado.ACTIVO;
+
+    @OneToMany(mappedBy = "empleado", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<EmpleadoConcepto> conceptos;
 }

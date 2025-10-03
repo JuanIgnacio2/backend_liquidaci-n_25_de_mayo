@@ -1,13 +1,13 @@
 package com.liquidacion.backend.services;
 
+import com.liquidacion.backend.DTO.EmpleadoConceptoDTO;
 import com.liquidacion.backend.DTO.EmpleadoCreateDTO;
 import com.liquidacion.backend.DTO.EmpleadoListDTO;
 import com.liquidacion.backend.DTO.EmpleadoUpdateDTO;
-import com.liquidacion.backend.entities.Area;
-import com.liquidacion.backend.entities.Categoria;
-import com.liquidacion.backend.entities.Empleado;
+import com.liquidacion.backend.entities.*;
 import com.liquidacion.backend.repository.AreaRepository;
 import com.liquidacion.backend.repository.CategoriaRepository;
+import com.liquidacion.backend.repository.EmpleadoConceptoRepository;
 import com.liquidacion.backend.repository.EmpleadoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +21,7 @@ public class EmpleadoService {
     private final EmpleadoRepository empleadoRepository;
     private final CategoriaRepository catRepo;
     private final AreaRepository areaRepo;
+    private final EmpleadoConceptoRepository conceptoRepo;
 
     public List<EmpleadoListDTO> listarTodos(){
         return empleadoRepository.findAll()
@@ -47,6 +48,7 @@ public class EmpleadoService {
         dto.setDomicilio(e.getDomicilio());
         dto.setBanco(e.getBanco());
         dto.setSexo(e.getSexo());
+        dto.setEstado(e.getEstado());
 
         // Evitamos NPE si aún no hay área / categoría
         if(e.getCategoria() != null) {
@@ -64,6 +66,20 @@ public class EmpleadoService {
         }
 
         dto.setGremio(e.getGremio());
+
+        if(e.getConceptos() != null){
+            List<EmpleadoConceptoDTO> conceptosDTO = e.getConceptos().stream().map(c -> {
+                EmpleadoConceptoDTO cDTO = new EmpleadoConceptoDTO();
+                cDTO.setId(c.getId());
+                cDTO.setLegajo(e.getLegajo());
+                cDTO.setTipoConcepto(String.valueOf(c.getTipoConcepto()));
+                cDTO.setIdReferencia(c.getIdReferencia());
+                cDTO.setUnidades(c.getUnidades());
+                return cDTO;
+            }).collect(Collectors.toList());
+            dto.setConceptosAsignados(conceptosDTO);
+        }
+
         return dto;
     }
 
@@ -92,7 +108,20 @@ public class EmpleadoService {
             e.setAreas(areas);
         }
 
-        return empleadoRepository.save(e);
+        Empleado empleadoGuardado = empleadoRepository.save(e);
+
+        //Guardar conceptos si lo hay
+        if(dto.getConceptosAsignados() != null && !dto.getConceptosAsignados().isEmpty()) {
+            dto.getConceptosAsignados().forEach(cdto -> {
+                EmpleadoConcepto concepto = new EmpleadoConcepto();
+                concepto.setEmpleado(empleadoGuardado);
+                concepto.setTipoConcepto(TipoConcepto.valueOf(cdto.getTipoConcepto()));
+                concepto.setIdReferencia(cdto.getIdReferencia());
+                concepto.setUnidades(cdto.getUnidades() != null ? cdto.getUnidades() : 1);
+                conceptoRepo.save(concepto);
+            });
+        }
+        return empleadoGuardado;
     }
 
     public Empleado actualizar(Integer legajo, EmpleadoUpdateDTO dto){
@@ -118,10 +147,29 @@ public class EmpleadoService {
             empleado.setAreas(area);
         }
 
+        if (dto.getEstado() != null) {
+            empleado.setEstado(dto.getEstado());
+        }
+
         if (dto.getSexo() != null)             empleado.setSexo(dto.getSexo());
         if (dto.getGremio() != null)           empleado.setGremio(dto.getGremio());
 
-        return empleadoRepository.save(empleado);
+        Empleado actualizado = empleadoRepository.save(empleado);
+
+        //Reemplazar conceptos si se mandaron
+        if(dto.getConceptosAsignados() != null) {
+            conceptoRepo.deleteAll(actualizado.getConceptos());
+
+            dto.getConceptosAsignados().forEach(cdto -> {
+                EmpleadoConcepto concepto = new EmpleadoConcepto();
+                concepto.setEmpleado(actualizado);
+                concepto.setTipoConcepto(TipoConcepto.valueOf(cdto.getTipoConcepto()));
+                concepto.setIdReferencia(cdto.getIdReferencia());
+                concepto.setUnidades(cdto.getUnidades() != null ? cdto.getUnidades() : 1);
+                conceptoRepo.save(concepto);
+            });
+        }
+        return actualizado;
     }
 
     public void eliminar(Integer legajo){

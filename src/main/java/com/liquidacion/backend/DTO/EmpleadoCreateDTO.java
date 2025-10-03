@@ -1,5 +1,6 @@
 package com.liquidacion.backend.DTO;
 
+import com.liquidacion.backend.entities.EstadoEmpleado;
 import com.liquidacion.backend.entities.Gremio;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
@@ -38,4 +39,8 @@ public class EmpleadoCreateDTO {
     private String sexo;
     @NotNull
     private Gremio gremio;
+
+    private EstadoEmpleado estado;
+
+    private List<EmpleadoConceptoDTO> conceptosAsignados;
 }
