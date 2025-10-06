@@ -1,9 +1,7 @@
 package com.liquidacion.backend.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
@@ -16,10 +14,10 @@ public class Area {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_area")
-    private Integer id;
+    private Integer idArea;
 
     private String nombre;
 
-    @OneToMany(mappedBy = "area")
-    private List<BonificacionArea> bonificaciones;
+    @ManyToMany(mappedBy = "areas")
+    private List<Empleado> empleados;
 }

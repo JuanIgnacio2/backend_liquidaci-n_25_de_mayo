@@ -32,6 +32,6 @@ public class PagoSueldo {
     @JoinColumn(name = "legajo")
     private Empleado empleado;
 
-    @OneToMany(mappedBy = "pago", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "pago", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PagoConcepto> conceptos;
 }

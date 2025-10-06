@@ -34,13 +34,15 @@ public class EmpleadoCreateDTO {
     private Integer idCategoria;
 
     @NotEmpty
-    private List<Integer> idArea;
+    private List<Integer> idAreas;   // corregido (antes singular)
+
     @NotBlank
     private String sexo;
+
     @NotNull
     private Gremio gremio;
 
-    private EstadoEmpleado estado;
+    private Integer idZona; // Opcional (solo si gremio == UOCRA)
 
     private List<EmpleadoConceptoDTO> conceptosAsignados;
 }

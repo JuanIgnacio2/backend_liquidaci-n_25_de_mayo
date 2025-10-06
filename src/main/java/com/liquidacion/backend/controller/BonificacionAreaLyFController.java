@@ -1,7 +1,7 @@
 package com.liquidacion.backend.controller;
 
 import com.liquidacion.backend.DTO.BonificacionAreaDTO;
-import com.liquidacion.backend.services.BonificacionAreaService;
+import com.liquidacion.backend.services.BonificacionAreaLyFService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,9 +13,9 @@ import java.util.List;
 @RequestMapping("/api/bonificaciones-variables")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
-public class BonificacionAreaController {
+public class BonificacionAreaLyFController {
 
-    private final BonificacionAreaService bonAreaService;
+    private final BonificacionAreaLyFService bonAreaService;
 
     @GetMapping("/area/{idArea}")
     public ResponseEntity<List<BonificacionAreaDTO>> obtenerPorArea(@PathVariable Integer idArea){

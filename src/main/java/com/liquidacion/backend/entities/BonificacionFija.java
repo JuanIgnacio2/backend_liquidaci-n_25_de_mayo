@@ -18,6 +18,11 @@ public class BonificacionFija {
     @Column(name = "id_bonificacion_fija")
     private Integer idBonificacionFija;
 
+    @Column(nullable = false, unique = true)
     private String nombre;
+
+    // Si representa % sobre el básico -> mantenemos porcentaje.
+    // Si representa monto fijo -> conviene renombrar a "monto".
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal porcentaje;
 }

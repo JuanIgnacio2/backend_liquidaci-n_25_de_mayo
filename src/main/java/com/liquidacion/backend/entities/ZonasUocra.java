@@ -5,20 +5,17 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 @Entity
-@Table(name = "descuentos")
+@Table(name = "zonas_uocra")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-
-public class Descuento {
+public class ZonasUocra {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_descuento")
-    private Integer idDescuentos;
+    @Column(name = "id_zona")
+    private Integer idZona;
 
+    @Column(nullable = false, length = 100)
     private String nombre;
-    private BigDecimal porcentaje;
 }

@@ -49,6 +49,6 @@ public class AreaService {
     }
 
     private AreaListDTO toListDTO(Area area) {
-        return new AreaListDTO(area.getId(), area.getNombre());
+        return new AreaListDTO(area.getIdArea(), area.getNombre());
     }
 }

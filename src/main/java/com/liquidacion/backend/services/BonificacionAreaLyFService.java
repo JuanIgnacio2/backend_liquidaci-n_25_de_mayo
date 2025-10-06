@@ -1,9 +1,9 @@
 package com.liquidacion.backend.services;
 
 import com.liquidacion.backend.DTO.BonificacionAreaDTO;
-import com.liquidacion.backend.entities.BonificacionArea;
+import com.liquidacion.backend.entities.BonificacionAreaLyF;
 import com.liquidacion.backend.repository.AreaRepository;
-import com.liquidacion.backend.repository.BonificacionAreaRepository;
+import com.liquidacion.backend.repository.BonificacionAreaLyFRepository;
 import com.liquidacion.backend.repository.CategoriaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,28 +15,28 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class BonificacionAreaService {
-    private final BonificacionAreaRepository bonificacionAreaRepository;
+public class BonificacionAreaLyFService {
+    private final BonificacionAreaLyFRepository bonificacionAreaRepository;
     private final AreaRepository areaRepo;
     private final CategoriaRepository categoriaRepo;
 
     @Transactional(readOnly = true)
     public List<BonificacionAreaDTO> listarPorArea(Integer idArea) {
-        return bonificacionAreaRepository.findByArea_Id(idArea)
+        return bonificacionAreaRepository.findByArea_IdArea(idArea)
                 .stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
-    public BonificacionArea buscar(Integer id){
+    public BonificacionAreaLyF buscar(Integer id){
         return bonificacionAreaRepository.findById(id)
                 .orElseThrow(()-> new RuntimeException("Bonificacion no encontrada"));
     }
 
-    private BonificacionAreaDTO toDTO(BonificacionArea bonificacionArea){
+    private BonificacionAreaDTO toDTO(BonificacionAreaLyF bonificacionArea){
         return new BonificacionAreaDTO(
                 bonificacionArea.getIdBonificacionVariable(),
-                bonificacionArea.getArea().getId(),
+                bonificacionArea.getArea().getIdArea(),
                 bonificacionArea.getArea().getNombre(),
                 bonificacionArea.getCategoria().getIdCategoria(),
                 bonificacionArea.getCategoria().getNombre(),
@@ -54,8 +54,8 @@ public class BonificacionAreaService {
         return toDTO(bonificacionAreaRepository.save(bonArea));
     }*/
 
-    public BonificacionArea actualizar(Integer id, BonificacionArea bonificacionActualizada){
-        BonificacionArea bonificacion = buscar(id);
+    public BonificacionAreaLyF actualizar(Integer id, BonificacionAreaLyF bonificacionActualizada){
+        BonificacionAreaLyF bonificacion = buscar(id);
         bonificacion.setArea(bonificacionActualizada.getArea());
         bonificacion.setCategoria(bonificacionActualizada.getCategoria());
         bonificacion.setPorcentaje(bonificacionActualizada.getPorcentaje());
@@ -67,13 +67,13 @@ public class BonificacionAreaService {
     }
 
     public BigDecimal obtenerPorcentaje(Integer categoriaId, Integer areaId){
-        List<BonificacionArea> bonificaciones = bonificacionAreaRepository.findByArea_IdAndCategoria_IdCategoria(categoriaId, areaId);
+        List<BonificacionAreaLyF> bonificaciones = bonificacionAreaRepository.findByArea_IdAreaAndCategoria_IdCategoria(categoriaId, areaId);
 
         if(bonificaciones.isEmpty()){
             return BigDecimal.ZERO;
         }
         return bonificaciones.stream()
-                .map(BonificacionArea::getPorcentaje)
+                .map(BonificacionAreaLyF::getPorcentaje)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

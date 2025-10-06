@@ -20,9 +20,11 @@ public class EmpleadoUpdateDTO {
     private String banco;
     private Integer idCategoria;
     private List<Integer> idAreas;
-    private EstadoEmpleado estado;
     private String sexo;
     private Gremio gremio;
+    private Integer idZona; // Opcional (UOCRA)
+
+    private EstadoEmpleado estado; // Se puede cambiar en update
 
     private List<EmpleadoConceptoDTO> conceptosAsignados;
 }

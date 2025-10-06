@@ -2,10 +2,10 @@ package com.liquidacion.backend.services;
 
 import com.liquidacion.backend.DTO.ConvenioFilaDTO;
 import com.liquidacion.backend.entities.Area;
-import com.liquidacion.backend.entities.BonificacionArea;
+import com.liquidacion.backend.entities.BonificacionAreaLyF;
 import com.liquidacion.backend.entities.Categoria;
 import com.liquidacion.backend.repository.AreaRepository;
-import com.liquidacion.backend.repository.BonificacionAreaRepository;
+import com.liquidacion.backend.repository.BonificacionAreaLyFRepository;
 import com.liquidacion.backend.repository.CategoriaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,7 +17,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class ConvenioService {
     private final CategoriaRepository categoriaRepo;
-    private final BonificacionAreaRepository bonAreaRepo;
+    private final BonificacionAreaLyFRepository bonAreaRepo;
     private final AreaRepository areaRepo;
 
     public List<ConvenioFilaDTO> obtenerConvenios() {
@@ -28,7 +28,7 @@ public class ConvenioService {
 
         List<Area> areas = areaRepo.findAll();
         List<Categoria> categorias = categoriaRepo.findAll();
-        List<BonificacionArea> todasBonificaciones = bonAreaRepo.findAll();
+        List<BonificacionAreaLyF> todasBonificaciones = bonAreaRepo.findAll();
 
         List<ConvenioFilaDTO> convenios = new ArrayList<>();
 
@@ -41,9 +41,9 @@ public class ConvenioService {
 
             for(Area area : areas) {
                 //Buscamos bonificación por categoria y área
-                Optional<BonificacionArea> bon = todasBonificaciones.stream()
+                Optional<BonificacionAreaLyF> bon = todasBonificaciones.stream()
                         .filter(b->b.getCategoria().getIdCategoria().equals(cat.getIdCategoria()) &&
-                                b.getArea().getId().equals(area.getId()))
+                                b.getArea().getIdArea().equals(area.getIdArea()))
                         .findFirst();
 
                 if(bon.isPresent()) {

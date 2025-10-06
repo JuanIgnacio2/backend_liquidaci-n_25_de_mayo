@@ -6,28 +6,25 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Entity
-@Table(name="categorias")
+@Table(name = "categoria_zona_uocra")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Categoria {
-
+public class BasicoUOCRA {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_categoria")
-    private Integer idCategoria;
+    private Integer id;
 
-    @Column(nullable = false, unique = true)
-    private String nombre;
+    @ManyToOne
+    @JoinColumn(name = "id_categoria", nullable = false)
+    private Categoria categoria;
 
-    // Para Luz y Fuerza tiene valor real.
-    // Para UOCRA se setea en 0 y se consulta en basicos_uocra.
+    @ManyToOne
+    @JoinColumn(name = "id_zona", nullable = false)
+    private ZonasUocra zona;
+
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal basico;
-
-    @OneToMany(mappedBy = "categoria")
-    private List<Empleado> empleados;
 }

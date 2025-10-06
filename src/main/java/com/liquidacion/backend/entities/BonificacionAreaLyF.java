@@ -8,11 +8,11 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "bonificaciones_variables")
+@Table(name = "bonificaciones_variables_lyf")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class BonificacionArea {
+public class BonificacionAreaLyF {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_bonificacion_variable")

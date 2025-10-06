@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 public class LiquidacionSueldosService {
     private final EmpleadoRepository empleadoRepository;
     private final BonificacionFijaRepository bonificacionFijaRepository;
-    private final BonificacionAreaRepository bonificacionAreaRepository;
+    private final BonificacionAreaLyFRepository bonificacionAreaRepository;
     private final DescuentoRepository descuentoRepository;
     private final PagoSueldoRepository pagoSueldoRepository;
     private final PagoConceptoRepository pagoConceptoRepository;
@@ -68,8 +68,8 @@ public class LiquidacionSueldosService {
 
         //Areas preestablecidas de el empleado
         for(Area area : empleado.getAreas()){
-            List<BonificacionArea> bonificacionesArea = bonificacionAreaRepository.findByArea(area);
-            for(BonificacionArea bonVar : bonificacionesArea){
+            List<BonificacionAreaLyF> bonificacionesArea = bonificacionAreaRepository.findByArea(area);
+            for(BonificacionAreaLyF bonVar : bonificacionesArea){
                 if(bonVar.getCategoria().getIdCategoria().equals(empleado.getCategoria().getIdCategoria())) {
                     BigDecimal monto = basico.multiply(bonVar.getPorcentaje().divide(BigDecimal.valueOf(100)));
                     totalBonificaciones = totalBonificaciones.add(monto);

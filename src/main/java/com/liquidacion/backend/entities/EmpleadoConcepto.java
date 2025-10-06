@@ -15,8 +15,6 @@ public class EmpleadoConcepto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //private Integer legajo;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_concepto")
     private TipoConcepto tipoConcepto;
@@ -24,6 +22,7 @@ public class EmpleadoConcepto {
     @Column(nullable = false)
     private Integer idReferencia;
 
+    @Column(nullable = false)
     private Integer unidades = 1;
 
     @ManyToOne(fetch = FetchType.LAZY)

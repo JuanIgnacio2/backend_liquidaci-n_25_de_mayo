@@ -57,7 +57,7 @@ public class EmpleadoService {
         }
         if(e.getAreas() != null) {
             dto.setIdAreas(e.getAreas().stream()
-                    .map(Area::getId)
+                    .map(Area::getIdArea)
                     .collect(Collectors.toList()));
 
             dto.setNombreAreas(e.getAreas().stream()
