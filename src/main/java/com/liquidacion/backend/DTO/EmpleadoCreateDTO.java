@@ -34,7 +34,7 @@ public class EmpleadoCreateDTO {
     private Integer idCategoria;
 
     @NotEmpty
-    private List<Integer> idAreas;   // corregido (antes singular)
+    private List<Integer> idAreas;
 
     @NotBlank
     private String sexo;
@@ -43,6 +43,8 @@ public class EmpleadoCreateDTO {
     private Gremio gremio;
 
     private Integer idZona; // Opcional (solo si gremio == UOCRA)
+
+    private EstadoEmpleado estado;
 
     private List<EmpleadoConceptoDTO> conceptosAsignados;
 }

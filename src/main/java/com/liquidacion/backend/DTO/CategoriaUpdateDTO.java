@@ -6,9 +6,8 @@ import jakarta.validation.constraints.Positive;
 import lombok.Data;
 
 import java.math.BigDecimal;
-
 @Data
-public class CategoriaCreateDTO {
+public class CategoriaUpdateDTO {
     @NotBlank
     private String nombreCategoria;
     @NotNull

@@ -1,10 +1,10 @@
 package com.liquidacion.backend.services;
 
-import com.liquidacion.backend.DTO.EmpleadoConceptoDTO;
 import com.liquidacion.backend.DTO.EmpleadoCreateDTO;
 import com.liquidacion.backend.DTO.EmpleadoListDTO;
 import com.liquidacion.backend.DTO.EmpleadoUpdateDTO;
 import com.liquidacion.backend.entities.*;
+import com.liquidacion.backend.mappers.EmpleadoMapper;
 import com.liquidacion.backend.repository.AreaRepository;
 import com.liquidacion.backend.repository.CategoriaRepository;
 import com.liquidacion.backend.repository.EmpleadoConceptoRepository;
@@ -26,64 +26,17 @@ public class EmpleadoService {
     public List<EmpleadoListDTO> listarTodos(){
         return empleadoRepository.findAll()
                 .stream()
-                .map(this::mapToListDTO)
+                .map(EmpleadoMapper::toListDTO)
                 .collect(Collectors.toList());
     }
 
     public EmpleadoListDTO obtenerPorLegajo(Integer legajo){
-        Empleado empleado = empleadoRepository.findById(legajo).get();
-        return mapToListDTO(empleado);
+        Empleado empleado = empleadoRepository.findById(legajo)
+                .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
+        return EmpleadoMapper.toListDTO(empleado);
     }
 
-    private EmpleadoListDTO mapToListDTO(Empleado e){
-        EmpleadoListDTO dto = new EmpleadoListDTO();
-        //Info básica
-        dto.setLegajo(e.getLegajo());
-        dto.setNombre(e.getNombre());
-        dto.setApellido(e.getApellido());
-        dto.setCuil(e.getCuil());
-
-        //Info complementaria
-        dto.setInicioActividad(e.getInicioActividad());
-        dto.setDomicilio(e.getDomicilio());
-        dto.setBanco(e.getBanco());
-        dto.setSexo(e.getSexo());
-        dto.setEstado(e.getEstado());
-
-        // Evitamos NPE si aún no hay área / categoría
-        if(e.getCategoria() != null) {
-            dto.setIdCategoria(e.getCategoria().getIdCategoria());
-            dto.setCategoria(e.getCategoria() != null ? e.getCategoria().getNombre() : null);
-        }
-        if(e.getAreas() != null) {
-            dto.setIdAreas(e.getAreas().stream()
-                    .map(Area::getIdArea)
-                    .collect(Collectors.toList()));
-
-            dto.setNombreAreas(e.getAreas().stream()
-                    .map(Area::getNombre)
-                    .collect(Collectors.toList()));
-        }
-
-        dto.setGremio(e.getGremio());
-
-        if(e.getConceptos() != null){
-            List<EmpleadoConceptoDTO> conceptosDTO = e.getConceptos().stream().map(c -> {
-                EmpleadoConceptoDTO cDTO = new EmpleadoConceptoDTO();
-                cDTO.setId(c.getId());
-                cDTO.setLegajo(e.getLegajo());
-                cDTO.setTipoConcepto(String.valueOf(c.getTipoConcepto()));
-                cDTO.setIdReferencia(c.getIdReferencia());
-                cDTO.setUnidades(c.getUnidades());
-                return cDTO;
-            }).collect(Collectors.toList());
-            dto.setConceptosAsignados(conceptosDTO);
-        }
-
-        return dto;
-    }
-
-    public Empleado guardar(EmpleadoCreateDTO dto){
+    public EmpleadoListDTO guardar(EmpleadoCreateDTO dto){
         if (dto.getLegajo() == null)
             throw new IllegalArgumentException("El legajo no puede ser null");
 
@@ -91,37 +44,27 @@ public class EmpleadoService {
             throw new RuntimeException("El empleado ya existe");
         }
 
-        Empleado e = new Empleado();
-        e.setLegajo(dto.getLegajo());
-        e.setNombre(dto.getNombre());
-        e.setApellido(dto.getApellido());
-        e.setCuil(dto.getCuil());
-        e.setInicioActividad(dto.getInicioActividad());
-        e.setDomicilio(dto.getDomicilio());
-        e.setBanco(dto.getBanco());
-        e.setCategoria(catRepo.getById(dto.getIdCategoria()));
-        e.setSexo(dto.getSexo());
-        e.setGremio(dto.getGremio());
+        Categoria categoria = catRepo.findById(dto.getIdCategoria())
+                .orElseThrow(() -> new RuntimeException("El categoria no existe"));
 
-        if(dto.getIdArea() != null && !dto.getIdArea().isEmpty()) {
-            List<Area> areas = areaRepo.findAllById(dto.getIdArea());
-            e.setAreas(areas);
-        }
+        List<Area> areas = dto.getIdAreas() != null ? areaRepo.findAllById(dto.getIdAreas()) : null;
 
-        Empleado empleadoGuardado = empleadoRepository.save(e);
+        Empleado empleado = EmpleadoMapper.toEntity(dto, categoria, areas);
 
-        //Guardar conceptos si lo hay
-        if(dto.getConceptosAsignados() != null && !dto.getConceptosAsignados().isEmpty()) {
+        Empleado guardado = empleadoRepository.save(empleado);
+
+        if(dto.getConceptosAsignados() != null){
             dto.getConceptosAsignados().forEach(cdto -> {
                 EmpleadoConcepto concepto = new EmpleadoConcepto();
-                concepto.setEmpleado(empleadoGuardado);
+                concepto.setEmpleado(guardado);
                 concepto.setTipoConcepto(TipoConcepto.valueOf(cdto.getTipoConcepto()));
                 concepto.setIdReferencia(cdto.getIdReferencia());
                 concepto.setUnidades(cdto.getUnidades() != null ? cdto.getUnidades() : 1);
                 conceptoRepo.save(concepto);
             });
         }
-        return empleadoGuardado;
+
+        return EmpleadoMapper.toListDTO(guardado);
     }
 
     public Empleado actualizar(Integer legajo, EmpleadoUpdateDTO dto){
@@ -147,10 +90,7 @@ public class EmpleadoService {
             empleado.setAreas(area);
         }
 
-        if (dto.getEstado() != null) {
-            empleado.setEstado(dto.getEstado());
-        }
-
+        if (dto.getEstado() != null)           empleado.setEstado(dto.getEstado());
         if (dto.getSexo() != null)             empleado.setSexo(dto.getSexo());
         if (dto.getGremio() != null)           empleado.setGremio(dto.getGremio());
 
@@ -172,7 +112,31 @@ public class EmpleadoService {
         return actualizado;
     }
 
-    public void eliminar(Integer legajo){
-        empleadoRepository.deleteById(legajo);
+    public EmpleadoListDTO cambiarEstado(Integer legajo){
+        Empleado empleado = empleadoRepository.findById(legajo)
+                .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
+
+        if(empleado.getEstado() == EstadoEmpleado.ACTIVO){
+            empleado.setEstado(EstadoEmpleado.DADO_DE_BAJA);
+        } else{
+            empleado.setEstado(EstadoEmpleado.ACTIVO);
+        }
+
+        empleadoRepository.save(empleado);
+        return EmpleadoMapper.toListDTO(empleado);
+    }
+
+    public List<EmpleadoListDTO> listarActivos(){
+        return empleadoRepository.findByEstado(EstadoEmpleado.ACTIVO)
+                .stream()
+                .map(EmpleadoMapper::toListDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<EmpleadoListDTO> listarDadosDeBaja(){
+        return empleadoRepository.findByEstado(EstadoEmpleado.DADO_DE_BAJA)
+                .stream()
+                .map(EmpleadoMapper::toListDTO)
+                .collect(Collectors.toList());
     }
 }

@@ -7,7 +7,6 @@ import com.liquidacion.backend.entities.Empleado;
 import com.liquidacion.backend.services.EmpleadoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,13 +27,23 @@ public class EmpleadoController {
         return ResponseEntity.ok(empleadoService.listarTodos());
     }
 
+    @GetMapping("/activos")
+    public ResponseEntity<List<EmpleadoListDTO>> listarActivos() {
+        return ResponseEntity.ok(empleadoService.listarActivos());
+    }
+
+    @GetMapping("/dados-de-baja")
+    public ResponseEntity<List<EmpleadoListDTO>> listarDadosDeBaja() {
+        return ResponseEntity.ok(empleadoService.listarDadosDeBaja());
+    }
+
     @GetMapping("/{legajo}")
     public ResponseEntity<EmpleadoListDTO> getbyLegajo(@PathVariable Integer legajo) {
         return ResponseEntity.ok(empleadoService.obtenerPorLegajo(legajo));
     }
 
     @PostMapping
-    public ResponseEntity<Empleado> registrarEmpleado(@Valid @RequestBody EmpleadoCreateDTO dto){
+    public ResponseEntity<EmpleadoListDTO> registrarEmpleado(@Valid @RequestBody EmpleadoCreateDTO dto){
         return ResponseEntity.ok(empleadoService.guardar(dto));
     }
 
@@ -43,9 +52,8 @@ public class EmpleadoController {
         return empleadoService.actualizar(legajo, dto);
     }
 
-    @DeleteMapping("/{legajo}")
-    public ResponseEntity<Void> eliminarEmpleado(@PathVariable Integer legajo) {
-        empleadoService.eliminar(legajo);
-        return ResponseEntity.noContent().build();
+    @PutMapping("/{legajo}/estado")
+    public ResponseEntity<EmpleadoListDTO> cambiarEstado(@PathVariable Integer legajo) {
+        return ResponseEntity.ok(empleadoService.cambiarEstado(legajo));
     }
 }
