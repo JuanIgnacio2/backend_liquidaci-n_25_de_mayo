@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/bonificaciones-fijas")
-@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class BonificacionFijaController {
     private final BonificacionFijaService bonFijaServ;

@@ -12,7 +12,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/bonificaciones-variables")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class BonificacionAreaLyFController {
 
     private final BonificacionAreaLyFService bonAreaService;

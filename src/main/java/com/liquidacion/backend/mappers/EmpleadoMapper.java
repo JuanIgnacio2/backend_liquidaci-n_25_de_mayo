@@ -17,6 +17,7 @@ public class EmpleadoMapper {
         dto.setNombre(e.getNombre());
         dto.setApellido(e.getApellido());
         dto.setCuil(e.getCuil());
+        dto.setDomicilio(e.getDomicilio());
         dto.setInicioActividad(e.getInicioActividad());
         dto.setBanco(e.getBanco());
         dto.setSexo(e.getSexo());
@@ -32,7 +33,7 @@ public class EmpleadoMapper {
             dto.setNombreAreas(e.getAreas().stream().map(Area::getNombre).collect(Collectors.toList()));
         }
 
-        dto.setGremio(e.getGremio());
+        dto.setGremio(GremioMapper.toDTO(e.getGremio()));
 
         if(e.getConceptos() != null){
             dto.setConceptosAsignados(
@@ -77,7 +78,7 @@ public class EmpleadoMapper {
 
     public static EmpleadoConceptoDTO toConceptoDTO(EmpleadoConcepto c) {
         EmpleadoConceptoDTO dto = new EmpleadoConceptoDTO();
-        dto.setId(c.getId());
+        dto.setId_empleado_concepto(c.getId_empleado_concepto());
         dto.setLegajo(c.getEmpleado().getLegajo());
         dto.setTipoConcepto(c.getTipoConcepto().name());
         dto.setIdReferencia(c.getIdReferencia());

@@ -1,7 +1,6 @@
 package com.liquidacion.backend.DTO;
 
 import com.liquidacion.backend.entities.EstadoEmpleado;
-import com.liquidacion.backend.entities.Gremio;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -20,7 +19,7 @@ public class EmpleadoListDTO {
     private String categoria;
     private String sexo;
     private EstadoEmpleado estado;
-    private Gremio gremio;
+    private GremioDTO gremio;
 
     private List<Integer> idAreas;
     private List<String> nombreAreas;

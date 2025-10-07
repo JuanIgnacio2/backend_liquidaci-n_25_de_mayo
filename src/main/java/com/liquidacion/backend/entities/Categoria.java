@@ -25,7 +25,7 @@ public class Categoria {
 
     // Para Luz y Fuerza tiene valor real.
     // Para UOCRA se setea en 0 y se consulta en basicos_uocra.
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(name = "basico", nullable = false, precision = 10, scale = 2)
     private BigDecimal basico;
 
     @OneToMany(mappedBy = "categoria")

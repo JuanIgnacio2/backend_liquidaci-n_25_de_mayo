@@ -13,7 +13,8 @@ import lombok.NoArgsConstructor;
 public class EmpleadoConcepto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "id_empleado_concepto")
+    private Long id_empleado_concepto;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_concepto")

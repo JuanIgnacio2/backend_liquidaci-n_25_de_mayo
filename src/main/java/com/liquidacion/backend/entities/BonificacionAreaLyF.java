@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "bonificaciones_variables_lyf")
+@Table(name = "bonificaciones_areas_lyf")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class BasicoUOCRA {
+public class CategoriasZonasUocra {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

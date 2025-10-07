@@ -50,7 +50,7 @@ public class EmpleadoConceptoService {
     }
 
     public Optional<EmpleadoConceptoDTO> modificar(EmpleadoConceptoDTO dto) {
-        return empleadoConceptoRepository.findById(dto.getId()).map(e->{
+        return empleadoConceptoRepository.findById(dto.getId_empleado_concepto()).map(e->{
             e.setTipoConcepto(TipoConcepto.valueOf(dto.getTipoConcepto()));
             e.setIdReferencia(dto.getIdReferencia());
             e.setUnidades(dto.getUnidades());
@@ -60,7 +60,7 @@ public class EmpleadoConceptoService {
 
     private EmpleadoConceptoDTO toDTO(EmpleadoConcepto e) {
         EmpleadoConceptoDTO dto = new EmpleadoConceptoDTO();
-        dto.setId(e.getId());
+        dto.setId_empleado_concepto(e.getId_empleado_concepto());
         dto.setLegajo(e.getEmpleado().getLegajo());
         dto.setTipoConcepto(String.valueOf(e.getTipoConcepto()));
         dto.setIdReferencia(e.getIdReferencia());

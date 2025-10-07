@@ -12,6 +12,7 @@ import com.liquidacion.backend.repository.EmpleadoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -71,7 +72,6 @@ public class EmpleadoService {
         Empleado empleado = empleadoRepository.findById(legajo)
                 .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
 
-
         if (dto.getNombre() != null)           empleado.setNombre(dto.getNombre());
         if (dto.getApellido() != null)         empleado.setApellido(dto.getApellido());
         if (dto.getCuil() != null)             empleado.setCuil(dto.getCuil());
@@ -120,6 +120,7 @@ public class EmpleadoService {
             empleado.setEstado(EstadoEmpleado.DADO_DE_BAJA);
         } else{
             empleado.setEstado(EstadoEmpleado.ACTIVO);
+            empleado.setInicioActividad(LocalDate.now());
         }
 
         empleadoRepository.save(empleado);
