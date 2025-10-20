@@ -45,22 +45,37 @@ public class EmpleadoMapper {
         return dto;
     }
 
-    public static Empleado toEntity(EmpleadoCreateDTO dto, Categoria categoria, List<Area> areas) {
-        Empleado e = new Empleado();
-        e.setLegajo(dto.getLegajo());
-        e.setNombre(dto.getNombre());
-        e.setApellido(dto.getApellido());
-        e.setCuil(dto.getCuil());
-        e.setInicioActividad(dto.getInicioActividad());
-        e.setDomicilio(dto.getDomicilio());
-        e.setBanco(dto.getBanco());
-        e.setCategoria(categoria);
-        e.setSexo(dto.getSexo());
-        e.setGremio(dto.getGremio());
-        e.setAreas(areas);
-        e.setEstado(dto.getEstado() != null ? dto.getEstado() : EstadoEmpleado.ACTIVO);
-        return e;
+    public static Empleado toEntity(
+            EmpleadoCreateDTO dto,
+            Categoria categoria,
+            Gremio gremio,
+            List<Area> areas,
+            ZonasUocra zona) {
+
+        Empleado empleado = new Empleado();
+        empleado.setNombre(dto.getNombre());
+        empleado.setApellido(dto.getApellido());
+        empleado.setDomicilio(dto.getDomicilio());
+        empleado.setCuil(dto.getCuil());
+        empleado.setEstado(dto.getEstado());
+        empleado.setSexo(dto.getSexo());
+        empleado.setInicioActividad(dto.getInicioActividad());
+        empleado.setCategoria(categoria);
+        empleado.setGremio(gremio);
+        empleado.setBanco(dto.getBanco());
+
+        if (areas != null) {
+            empleado.setAreas(areas);
+        }
+
+        if (zona != null) {
+            empleado.setZona(zona);
+        }
+
+        return empleado;
     }
+
+
 
     public static void updateEntity(Empleado e, EmpleadoUpdateDTO dto, Categoria categoria, List<Area> areas) {
         if (dto.getNombre() != null) e.setNombre(dto.getNombre());

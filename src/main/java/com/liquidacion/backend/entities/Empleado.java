@@ -18,7 +18,8 @@ public class Empleado {
 
     @Id
     @Column(name = "legajo")
-    private Integer legajo;   // PK (sin autoincremento porque en tu SQL lo querías empezar desde 1001)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer legajo;
 
     private String nombre;
     private String apellido;

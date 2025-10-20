@@ -14,4 +14,6 @@ public interface CategoriasZonasUocraRepository extends JpaRepository<Categorias
     Optional<CategoriasZonasUocra> findByCategoria_IdCategoriaAndZona_IdZona(Integer idCategoria, Integer idZona);
 
     List<CategoriasZonasUocra> findByZona(ZonasUocra idZona);
+
+    List<CategoriasZonasUocra> findByZonaIdZona(Integer idZona);
 }

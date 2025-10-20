@@ -82,7 +82,6 @@ public class ConvenioService {
                 Categoria categoria = cz.getCategoria();
 
                 CategoriaZonaUocraDTO dto = new CategoriaZonaUocraDTO();
-                dto.setId(cz.getId());
                 dto.setIdCategoria(categoria.getIdCategoria());
                 dto.setNombreCategoria(categoria.getNombre());
                 dto.setBasico(cz.getBasico());

@@ -5,10 +5,7 @@ import com.liquidacion.backend.DTO.EmpleadoListDTO;
 import com.liquidacion.backend.DTO.EmpleadoUpdateDTO;
 import com.liquidacion.backend.entities.*;
 import com.liquidacion.backend.mappers.EmpleadoMapper;
-import com.liquidacion.backend.repository.AreaRepository;
-import com.liquidacion.backend.repository.CategoriaRepository;
-import com.liquidacion.backend.repository.EmpleadoConceptoRepository;
-import com.liquidacion.backend.repository.EmpleadoRepository;
+import com.liquidacion.backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +17,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class EmpleadoService {
     private final EmpleadoRepository empleadoRepository;
+    private final GremioRepository gremioRepo;
     private final CategoriaRepository catRepo;
     private final AreaRepository areaRepo;
+    private final ZonasUocraRepository zonasUocraRepo;
     private final EmpleadoConceptoRepository conceptoRepo;
 
     public List<EmpleadoListDTO> listarTodos(){
@@ -37,24 +36,34 @@ public class EmpleadoService {
         return EmpleadoMapper.toListDTO(empleado);
     }
 
-    public EmpleadoListDTO guardar(EmpleadoCreateDTO dto){
-        if (dto.getLegajo() == null)
-            throw new IllegalArgumentException("El legajo no puede ser null");
-
-        if(empleadoRepository.existsById(dto.getLegajo())){
-            throw new RuntimeException("El empleado ya existe");
-        }
+    public EmpleadoListDTO guardar(EmpleadoCreateDTO dto) {
 
         Categoria categoria = catRepo.findById(dto.getIdCategoria())
-                .orElseThrow(() -> new RuntimeException("El categoria no existe"));
+                .orElseThrow(() -> new RuntimeException("La categoría no existe"));
 
-        List<Area> areas = dto.getIdAreas() != null ? areaRepo.findAllById(dto.getIdAreas()) : null;
+        Gremio gremio = gremioRepo.findById(dto.getGremio().getIdGremio())
+                .orElseThrow(() -> new RuntimeException("El gremio no existe"));
 
-        Empleado empleado = EmpleadoMapper.toEntity(dto, categoria, areas);
+        Empleado empleado;
+
+        // 🔹 Si el gremio es UOCRA, se usan ZonasUocra
+        if ("UOCRA".equalsIgnoreCase(gremio.getNombre())) {
+            ZonasUocra zonas = (dto.getIdZona() != null) ? zonasUocraRepo.findById(dto.getIdZona())
+                    .orElseThrow(() -> new RuntimeException("El zona no existe")) : null;
+            empleado = EmpleadoMapper.toEntity(dto, categoria, gremio, null, zonas);
+        }
+        // 🔹 Si el gremio es Luz y Fuerza, se usan Áreas
+        else if ("LUZ_Y_FUERZA".equalsIgnoreCase(gremio.getNombre()) || "lyf".equalsIgnoreCase(gremio.getNombre())) {
+            List<Area> areas = dto.getIdAreas() != null ? areaRepo.findAllById(dto.getIdAreas()) : null;
+            empleado = EmpleadoMapper.toEntity(dto, categoria, gremio, areas, null);
+        }
+        else {
+            throw new RuntimeException("Gremio no válido: " + gremio.getNombre());
+        }
 
         Empleado guardado = empleadoRepository.save(empleado);
 
-        if(dto.getConceptosAsignados() != null){
+        if (dto.getConceptosAsignados() != null) {
             dto.getConceptosAsignados().forEach(cdto -> {
                 EmpleadoConcepto concepto = new EmpleadoConcepto();
                 concepto.setEmpleado(guardado);
@@ -67,6 +76,7 @@ public class EmpleadoService {
 
         return EmpleadoMapper.toListDTO(guardado);
     }
+
 
     public Empleado actualizar(Integer legajo, EmpleadoUpdateDTO dto){
         Empleado empleado = empleadoRepository.findById(legajo)

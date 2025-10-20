@@ -51,7 +51,6 @@ public class ConvenioMapper {
 
     public static CategoriaZonaUocraDTO toCategoriaZonaDTO(CategoriasZonasUocra cz) {
         CategoriaZonaUocraDTO dto = new CategoriaZonaUocraDTO();
-        dto.setId(cz.getId());
         dto.setIdCategoria(cz.getCategoria().getIdCategoria());
         dto.setNombreCategoria(cz.getCategoria().getNombre());
         dto.setBasico(cz.getBasico());
