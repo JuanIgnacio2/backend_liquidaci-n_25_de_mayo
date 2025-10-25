@@ -3,14 +3,18 @@ package com.liquidacion.backend.DTO;
 import com.liquidacion.backend.entities.EstadoEmpleado;
 import com.liquidacion.backend.entities.Gremio;
 import jakarta.validation.constraints.NotEmpty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class EmpleadoCreateDTO {
     @NotNull
     private Integer legajo;
@@ -33,14 +37,13 @@ public class EmpleadoCreateDTO {
     @NotNull
     private Integer idCategoria;
 
-    @NotEmpty
     private List<Integer> idAreas;
 
     @NotBlank
     private String sexo;
 
     @NotNull
-    private Gremio gremio;
+    private Integer idGremio;
 
     private Integer idZona; // Opcional (solo si gremio == UOCRA)
 

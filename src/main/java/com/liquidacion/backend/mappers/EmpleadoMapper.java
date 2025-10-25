@@ -33,6 +33,11 @@ public class EmpleadoMapper {
             dto.setNombreAreas(e.getAreas().stream().map(Area::getNombre).collect(Collectors.toList()));
         }
 
+        if (e.getZona() != null) {
+            dto.setIdZona(e.getZona().getIdZona());
+            dto.setNombreZona(e.getZona().getNombre());
+        }
+
         dto.setGremio(GremioMapper.toDTO(e.getGremio()));
 
         if(e.getConceptos() != null){
@@ -93,11 +98,44 @@ public class EmpleadoMapper {
 
     public static EmpleadoConceptoDTO toConceptoDTO(EmpleadoConcepto c) {
         EmpleadoConceptoDTO dto = new EmpleadoConceptoDTO();
-        dto.setId_empleado_concepto(c.getId_empleado_concepto());
+        dto.setIdEmpleadoConcepto(c.getId_empleado_concepto());
         dto.setLegajo(c.getEmpleado().getLegajo());
         dto.setTipoConcepto(c.getTipoConcepto().name());
         dto.setIdReferencia(c.getIdReferencia());
         dto.setUnidades(c.getUnidades());
         return dto;
+    }
+
+    //Mappers según gremio
+    public static Empleado toEntityLuzYFuerza(EmpleadoCreateDTO dto, Categoria categoria, Gremio gremio, List<Area> areas) {
+        Empleado empleado = new Empleado();
+        empleado.setNombre(dto.getNombre());
+        empleado.setApellido(dto.getApellido());
+        empleado.setCuil(dto.getCuil());
+        empleado.setInicioActividad(dto.getInicioActividad());
+        empleado.setDomicilio(dto.getDomicilio());
+        empleado.setBanco(dto.getBanco());
+        empleado.setCategoria(categoria);
+        empleado.setGremio(gremio);
+        empleado.setSexo(dto.getSexo());
+        empleado.setEstado(dto.getEstado());
+        empleado.setAreas(areas);
+        return empleado;
+    }
+
+    public static Empleado toEntityUocra(EmpleadoCreateDTO dto, Categoria categoria, Gremio gremio, ZonasUocra zona) {
+        Empleado empleado = new Empleado();
+        empleado.setNombre(dto.getNombre());
+        empleado.setApellido(dto.getApellido());
+        empleado.setCuil(dto.getCuil());
+        empleado.setInicioActividad(dto.getInicioActividad());
+        empleado.setDomicilio(dto.getDomicilio());
+        empleado.setBanco(dto.getBanco());
+        empleado.setCategoria(categoria);
+        empleado.setGremio(gremio);
+        empleado.setSexo(dto.getSexo());
+        empleado.setEstado(dto.getEstado());
+        empleado.setZona(zona);
+        return empleado;
     }
 }

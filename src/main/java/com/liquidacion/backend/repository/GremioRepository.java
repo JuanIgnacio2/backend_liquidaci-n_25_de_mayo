@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface GremioRepository extends JpaRepository<Gremio, Integer> {
     Gremio findByNombre(String nombre);
+    long count();
 }

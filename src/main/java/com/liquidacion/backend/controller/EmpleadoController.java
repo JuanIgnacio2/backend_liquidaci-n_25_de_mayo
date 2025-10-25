@@ -55,4 +55,9 @@ public class EmpleadoController {
     public ResponseEntity<EmpleadoListDTO> cambiarEstado(@PathVariable Integer legajo) {
         return ResponseEntity.ok(empleadoService.cambiarEstado(legajo));
     }
+
+    @GetMapping("/count/activos")
+    public long getEmpleadosActivos(){
+        return empleadoService.contarEmpleadosActivos();
+    }
 }

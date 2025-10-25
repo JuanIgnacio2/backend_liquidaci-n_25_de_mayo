@@ -1,5 +1,6 @@
 package com.liquidacion.backend.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -46,6 +47,7 @@ public class Empleado {
     private ZonasUocra zona; // solo aplica a UOCRA
 
     @OneToMany(mappedBy = "empleado", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<PagoSueldo> pagos;
 
     @ManyToMany(fetch = FetchType.LAZY)

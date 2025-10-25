@@ -24,8 +24,4 @@ public class PagoConceptoService {
     public PagoConcepto guardar(PagoConcepto concepto) {
         return pagoConceptoRepository.save(concepto);
     }
-
-    public void eliminar(Long id) {
-        pagoConceptoRepository.deleteById(id);
-    }
 }

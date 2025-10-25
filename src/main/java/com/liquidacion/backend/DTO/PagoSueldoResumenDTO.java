@@ -14,5 +14,7 @@ public class PagoSueldoResumenDTO {
 
     private LocalDate fechaPago;
     private String periodoPago;
-    private BigDecimal total;
+    private BigDecimal total_bruto;
+    private BigDecimal total_descuentos;
+    private BigDecimal total_neto;
 }

@@ -12,13 +12,13 @@ import java.math.BigDecimal;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-
-public class Descuento {
+public class Descuentos {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_descuento")
-    private Integer idDescuentos;
+    private Integer idDescuento;
 
     private String nombre;
+
     private BigDecimal porcentaje;
 }

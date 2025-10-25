@@ -1,5 +1,6 @@
 package com.liquidacion.backend.entities;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -26,12 +28,15 @@ public class PagoSueldo {
     @Column(name = "periodo_pago")
     private String periodoPago;
 
-    private BigDecimal total;
+    private BigDecimal total_bruto;
+    private BigDecimal total_descuentos;
+    private BigDecimal total_neto;
 
     @ManyToOne
     @JoinColumn(name = "legajo")
     private Empleado empleado;
 
     @OneToMany(mappedBy = "pago", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PagoConcepto> conceptos;
+    @JsonManagedReference
+    private List<PagoConcepto> pagoConceptos = new ArrayList<>();
 }

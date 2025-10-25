@@ -21,6 +21,11 @@ public class ConvenioController {
         return ResponseEntity.ok(convenioService.getResumenConvenios());
     }
 
+    @GetMapping("/count")
+    public long getGremios(){
+        return convenioService.contarGremios();
+    }
+
     @GetMapping("/lyf")
     public ResponseEntity<ConvenioDTO> getConvenioLyf() {
         return ResponseEntity.ok(convenioService.getConvenioLyf());

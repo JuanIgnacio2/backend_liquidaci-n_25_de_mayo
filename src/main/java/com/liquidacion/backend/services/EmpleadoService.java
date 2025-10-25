@@ -38,24 +38,25 @@ public class EmpleadoService {
 
     public EmpleadoListDTO guardar(EmpleadoCreateDTO dto) {
 
+        Gremio gremio = gremioRepo.findById(dto.getIdGremio())
+                .orElseThrow(() -> new RuntimeException("El gremio no existe"));
+
         Categoria categoria = catRepo.findById(dto.getIdCategoria())
                 .orElseThrow(() -> new RuntimeException("La categoría no existe"));
 
-        Gremio gremio = gremioRepo.findById(dto.getGremio().getIdGremio())
-                .orElseThrow(() -> new RuntimeException("El gremio no existe"));
-
         Empleado empleado;
 
-        // 🔹 Si el gremio es UOCRA, se usan ZonasUocra
-        if ("UOCRA".equalsIgnoreCase(gremio.getNombre())) {
-            ZonasUocra zonas = (dto.getIdZona() != null) ? zonasUocraRepo.findById(dto.getIdZona())
-                    .orElseThrow(() -> new RuntimeException("El zona no existe")) : null;
-            empleado = EmpleadoMapper.toEntity(dto, categoria, gremio, null, zonas);
+        if (gremio.getNombre().equalsIgnoreCase("UOCRA")) {
+            // UOCRA usa zona única
+            ZonasUocra zona = zonasUocraRepo.findById(dto.getIdZona())
+                    .orElseThrow(() -> new RuntimeException("La zona no existe"));
+            empleado = EmpleadoMapper.toEntityUocra(dto, categoria, gremio, zona);
         }
         // 🔹 Si el gremio es Luz y Fuerza, se usan Áreas
-        else if ("LUZ_Y_FUERZA".equalsIgnoreCase(gremio.getNombre()) || "lyf".equalsIgnoreCase(gremio.getNombre())) {
-            List<Area> areas = dto.getIdAreas() != null ? areaRepo.findAllById(dto.getIdAreas()) : null;
-            empleado = EmpleadoMapper.toEntity(dto, categoria, gremio, areas, null);
+        else if (gremio.getNombre().equalsIgnoreCase("LUZ_Y_FUERZA")) {
+            // LUZ_Y_FUERZA usa áreas
+            List<Area> areas = dto.getIdAreas() != null ? areaRepo.findAllById(dto.getIdAreas()) : List.of();
+            empleado = EmpleadoMapper.toEntityLuzYFuerza(dto, categoria, gremio, areas);
         }
         else {
             throw new RuntimeException("Gremio no válido: " + gremio.getNombre());
@@ -149,5 +150,9 @@ public class EmpleadoService {
                 .stream()
                 .map(EmpleadoMapper::toListDTO)
                 .collect(Collectors.toList());
+    }
+
+    public Long contarEmpleadosActivos(){
+        return empleadoRepository.countByEstado(EstadoEmpleado.ACTIVO);
     }
 }

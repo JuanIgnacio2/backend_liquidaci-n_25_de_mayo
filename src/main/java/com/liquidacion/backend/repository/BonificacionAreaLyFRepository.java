@@ -10,6 +10,5 @@ import java.util.List;
 @Repository
 public interface BonificacionAreaLyFRepository extends JpaRepository<BonificacionAreaLyF, Integer> {
     List<BonificacionAreaLyF> findByArea_IdArea(Integer idArea);
-    List<BonificacionAreaLyF> findByArea_IdAreaAndCategoria_IdCategoria(Integer categoriaId, Integer areaId);
-    List<BonificacionAreaLyF> findByArea(Area area);
+    List<BonificacionAreaLyF> findByArea_IdAreaAndCategoria_IdCategoria(Integer areaId, Integer categoriaId);
 }

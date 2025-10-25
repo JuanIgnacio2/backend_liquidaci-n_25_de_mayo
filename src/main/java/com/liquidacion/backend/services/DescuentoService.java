@@ -1,6 +1,7 @@
 package com.liquidacion.backend.services;
 
-import com.liquidacion.backend.entities.Descuento;
+import com.liquidacion.backend.DTO.DescuentoDTO;
+import com.liquidacion.backend.entities.Descuentos;
 import com.liquidacion.backend.repository.DescuentoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,21 +13,21 @@ import java.util.List;
 public class DescuentoService {
     private final DescuentoRepository descuentoRepository;
 
-    public List<Descuento> listar(){
+    public List<Descuentos> listar(){
         return descuentoRepository.findAll();
     }
 
-    public Descuento obtenerPorId(Integer id){
+    public Descuentos obtenerPorId(Integer id){
         return descuentoRepository.findById(id)
                 .orElseThrow(()->new RuntimeException("Descuento no encontrado"));
     }
 
-    public Descuento guardar(Descuento descuento){
+    public Descuentos guardar(Descuentos descuento){
         return descuentoRepository.save(descuento);
     }
 
-    public Descuento actualizar(Integer id, Descuento actualizado){
-        Descuento descuento = obtenerPorId(id);
+    public Descuentos actualizar(Integer id, Descuentos actualizado){
+        Descuentos descuento = obtenerPorId(id);
         descuento.setNombre(actualizado.getNombre());
         descuento.setPorcentaje(actualizado.getPorcentaje());
         return descuentoRepository.save(descuento);

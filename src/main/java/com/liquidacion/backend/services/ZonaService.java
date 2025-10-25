@@ -1,7 +1,6 @@
 package com.liquidacion.backend.services;
 
 import com.liquidacion.backend.DTO.ZonaDTO;
-import com.liquidacion.backend.entities.ZonasUocra;
 import com.liquidacion.backend.mappers.ZonaMapper;
 import com.liquidacion.backend.repository.CategoriasZonasUocraRepository;
 import com.liquidacion.backend.repository.ZonasUocraRepository;

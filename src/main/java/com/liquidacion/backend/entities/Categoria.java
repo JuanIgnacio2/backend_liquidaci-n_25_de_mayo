@@ -1,5 +1,6 @@
 package com.liquidacion.backend.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,5 +30,6 @@ public class Categoria {
     private BigDecimal basico;
 
     @OneToMany(mappedBy = "categoria")
+    @JsonIgnore
     private List<Empleado> empleados;
 }

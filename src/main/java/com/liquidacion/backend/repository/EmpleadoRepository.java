@@ -12,4 +12,5 @@ public interface EmpleadoRepository extends JpaRepository<Empleado, Integer> {
     Optional<Empleado> findByCuil(String cuil);
     List<Empleado> findByEstado(EstadoEmpleado estado);
     Long countByGremioAndEstado(Gremio gremio, EstadoEmpleado estado);
+    Long countByEstado(EstadoEmpleado estado);
 }

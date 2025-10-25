@@ -62,10 +62,6 @@ public class BonificacionAreaLyFService {
         return bonificacionAreaRepository.save(bonificacion);
     }
 
-    public void eliminar(Integer id){
-        bonificacionAreaRepository.deleteById(id);
-    }
-
     public BigDecimal obtenerPorcentaje(Integer categoriaId, Integer areaId){
         List<BonificacionAreaLyF> bonificaciones = bonificacionAreaRepository.findByArea_IdAreaAndCategoria_IdCategoria(categoriaId, areaId);
 

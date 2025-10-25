@@ -13,4 +13,6 @@ public class ConvenioResumenDTO {
     private Long cantidadCategorias;
     private String descripcion;
     private String controller;
+    private long cantidadAreas;
+    private long cantidadZonas;
 }

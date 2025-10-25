@@ -1,5 +1,6 @@
 package com.liquidacion.backend.repository;
 
+import com.liquidacion.backend.entities.Categoria;
 import com.liquidacion.backend.entities.CategoriasZonasUocra;
 import com.liquidacion.backend.entities.ZonasUocra;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,4 +17,6 @@ public interface CategoriasZonasUocraRepository extends JpaRepository<Categorias
     List<CategoriasZonasUocra> findByZona(ZonasUocra idZona);
 
     List<CategoriasZonasUocra> findByZonaIdZona(Integer idZona);
+
+    Optional<CategoriasZonasUocra> findByCategoriaAndZona(Categoria categoria, ZonasUocra zona);
 }

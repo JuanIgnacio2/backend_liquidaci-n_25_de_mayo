@@ -9,10 +9,8 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,6 +23,7 @@ public class LiquidacionSueldosService {
     private final PagoSueldoRepository pagoSueldoRepository;
     private final PagoConceptoRepository pagoConceptoRepository;
     private final CategoriaRepository categoriaRepository;
+    private final CategoriasZonasUocraRepository categoriaZonaUocraRepository;
 
     public Optional<PagoSueldo> obtenerPagoPorId(Long idPago){
         return pagoSueldoRepository.findById(idPago);
@@ -38,11 +37,26 @@ public class LiquidacionSueldosService {
     }
 
     @Transactional
-    public PagoSueldo liquidarSueldo(LiquidacionSueldoDTO dto, LocalDate fechaPago){
+    public PagoSueldo liquidarSueldo(LiquidacionSueldoDTO dto, LocalDate fechaPago) {
         Empleado empleado = empleadoRepository.findById(dto.getLegajo())
                 .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
 
-        BigDecimal basico = empleado.getCategoria().getBasico();
+        String gremio = empleado.getGremio().getNombre().toUpperCase();
+        BigDecimal basico;
+        TipoConcepto tipoBasico;
+
+        if (gremio.contains("UOCRA")) {
+            CategoriasZonasUocra categoriaZona = categoriaZonaUocraRepository
+                    .findByCategoriaAndZona(empleado.getCategoria(), empleado.getZona())
+                    .orElseThrow(() -> new RuntimeException("No se encontró categoría-zona para UOCRA"));
+
+            basico = categoriaZona.getBasico();
+            tipoBasico = TipoConcepto.CATEGORIA_ZONA;
+        } else {
+            basico = empleado.getCategoria().getBasico();
+            tipoBasico = TipoConcepto.CATEGORIA;
+        }
+
         BigDecimal totalBonificaciones = BigDecimal.ZERO;
         BigDecimal totalDescuentos = BigDecimal.ZERO;
 
@@ -50,105 +64,146 @@ public class LiquidacionSueldosService {
         pago.setEmpleado(empleado);
         pago.setPeriodoPago(dto.getPeriodoPago());
         pago.setFechaPago(fechaPago);
-        pago.setTotal(BigDecimal.ZERO);
+        pago.setTotal_bruto(BigDecimal.ZERO);
+        pago.setTotal_descuentos(BigDecimal.ZERO);
+        pago.setTotal_neto(BigDecimal.ZERO);
         pago = pagoSueldoRepository.save(pago);
 
-        //Concepto 1: Sueldo básico
-        //crearConcepto(pago, "BASICO", null, 1, basico, basico);
-        crearConcepto(pago, TipoConcepto.CATEGORIA.name(), empleado.getCategoria().getIdCategoria(), 1, basico, basico);
+        // Sueldo básico
+        crearConcepto(pago, tipoBasico.name(), empleado.getCategoria().getIdCategoria(), 1, basico, basico);
 
-        //Concepto 2: Bonificaciones de área
-        //Registrar id de bonificaciones de area (agregadas en la interfaz de liquidar sueldos) para no repetir
-        List<Integer> bonificacionesVariablesManual = dto.getConceptos().stream()
-                .filter(c -> c.getTipoConcepto().equals("BONIFICACION_VARIABLE"))
-                .map(ConceptoInputDTO::getIdReferencia)
-                .toList();
+        //Básico referencia de categoria 11
+        Categoria categoriaReferencia = categoriaRepository.findById(11)
+                .orElseThrow(() -> new RuntimeException("Categoria no encontrada"));
+        BigDecimal basicoReferencia = categoriaReferencia.getBasico();
 
-        Set<Integer> bonifVarYaAgregadas = new HashSet<>();
+        // Bonificaciones específicas Luz y Fuerza
+        if (gremio.contains("LUZ")) {
+            for (Area area : empleado.getAreas()) {
+                List<BonificacionAreaLyF> bonificaciones = bonificacionAreaRepository
+                        .findByArea_IdAreaAndCategoria_IdCategoria(
+                                area.getIdArea(),
+                                empleado.getCategoria().getIdCategoria() // CORREGIDO
+                        );
 
-        //Areas preestablecidas de el empleado
-        for(Area area : empleado.getAreas()){
-            List<BonificacionAreaLyF> bonificacionesArea = bonificacionAreaRepository.findByArea(area);
-            for(BonificacionAreaLyF bonVar : bonificacionesArea){
-                if(bonVar.getCategoria().getIdCategoria().equals(empleado.getCategoria().getIdCategoria())) {
-                    BigDecimal monto = basico.multiply(bonVar.getPorcentaje().divide(BigDecimal.valueOf(100)));
+                for (BonificacionAreaLyF bonif : bonificaciones) {
+                    BigDecimal monto = basicoReferencia.multiply(bonif.getPorcentaje().divide(BigDecimal.valueOf(100)));
                     totalBonificaciones = totalBonificaciones.add(monto);
-                    crearConcepto(pago, TipoConcepto.BONIFICACION_VARIABLE.name(), bonVar.getIdBonificacionVariable(), 1, monto, monto);
-                    bonifVarYaAgregadas.add(bonVar.getIdBonificacionVariable());
+
+                    crearConcepto(pago, TipoConcepto.BONIFICACION_VARIABLE.name(),
+                            bonif.getIdBonificacionVariable(), 1, monto, monto);
                 }
             }
         }
 
-        //Bonificaciones y descuentos enviados desde el frontend
-        for(ConceptoInputDTO conceptoDTO : dto.getConceptos()){
+        // Bonificaciones / descuentos manuales
+        for (ConceptoInputDTO conceptoDTO : dto.getConceptos()) {
+
             String tipo = conceptoDTO.getTipoConcepto();
+            if(tipo.equals("CATEGORIA") || tipo.equals("BONIFICACION_VARIABLE")) continue;
             Integer idRef = conceptoDTO.getIdReferencia();
-            Integer unidades = conceptoDTO.getUnidades() != null ? conceptoDTO.getUnidades() : 1;
+            Integer unidades = Optional.ofNullable(conceptoDTO.getUnidades()).orElse(1);
 
             BigDecimal montoUnitario = BigDecimal.ZERO;
 
-            switch (tipo){
-                case "BONIFICACION_FIJA":
+            switch (tipo) {
+                case "BONIFICACION_FIJA" -> {
                     BonificacionFija bonFija = bonificacionFijaRepository.findById(idRef)
-                            .orElseThrow(() -> new RuntimeException("Bonificacion no encontrada"));
-                    montoUnitario = basico.multiply(bonFija.getPorcentaje().divide(BigDecimal.valueOf(100)));
+                            .orElseThrow(() -> new RuntimeException("Bonificación fija no encontrada"));
+                    montoUnitario = basicoReferencia.multiply(bonFija.getPorcentaje().divide(BigDecimal.valueOf(100)));
                     totalBonificaciones = totalBonificaciones.add(montoUnitario.multiply(BigDecimal.valueOf(unidades)));
-                    break;
-
-                case "BONIFICACION_VARIABLE":
-                    /*BonificacionArea bonVar = bonificacionAreaRepository.findById(idRef)
-                            .orElseThrow(() -> new RuntimeException("Bonificacion no encontrada"));
-                    montoUnitario = basico.multiply(bonVar.getPorcentaje().divide(BigDecimal.valueOf(100)));
-                    totalBonificaciones = totalBonificaciones.add(montoUnitario.multiply(BigDecimal.valueOf(unidades)));
-                    break;*/
-                    continue;
-
-                case "DESCUENTO":
-                    Descuento desc = descuentoRepository.findById(idRef)
+                }
+                case "DESCUENTO" -> {
+                    Descuentos desc = descuentoRepository.findById(idRef)
                             .orElseThrow(() -> new RuntimeException("Descuento no encontrado"));
                     BigDecimal base = basico.add(totalBonificaciones);
-                    montoUnitario = base.multiply(desc.getPorcentaje()
-                            .divide(BigDecimal.valueOf(100)));
+                    montoUnitario = base.multiply(desc.getPorcentaje().divide(BigDecimal.valueOf(100)));
                     totalDescuentos = totalDescuentos.add(montoUnitario.multiply(BigDecimal.valueOf(unidades)));
-                    break;
-
-                case "CATEGORIA":
-                    // Si se encuentra "CATEGORIA", se omite, porque ya se añadió antes del for
-                    continue;
-                default:
-                    throw new RuntimeException("Tipo de concepto no encontrado");
+                }
+                default -> {}
             }
 
             BigDecimal totalConcepto = montoUnitario.multiply(BigDecimal.valueOf(unidades));
             crearConcepto(pago, tipo, idRef, unidades, montoUnitario, totalConcepto);
         }
 
-        //Total neto
-        BigDecimal totalNeto = basico.add(totalBonificaciones).subtract(totalDescuentos);
-        pago.setTotal(totalNeto);
-        return pagoSueldoRepository.save(pago);
+        // Totales
+        BigDecimal totalBruto = basico.add(totalBonificaciones);
+        BigDecimal totalNeto = totalBruto.subtract(totalDescuentos);
+
+        pago.setTotal_bruto(totalBruto);
+        pago.setTotal_descuentos(totalDescuentos);
+        pago.setTotal_neto(totalNeto);
+
+        pagoSueldoRepository.save(pago);
+
+        // Evitar bucles de serialización
+        PagoSueldo response = new PagoSueldo();
+        response.setIdPago(pago.getIdPago());
+        response.setPeriodoPago(pago.getPeriodoPago());
+        response.setFechaPago(pago.getFechaPago());
+        response.setTotal_bruto(totalBruto);
+        response.setTotal_descuentos(totalDescuentos);
+        response.setTotal_neto(totalNeto);
+        return response;
     }
 
     private void crearConcepto(PagoSueldo pago, String tipo, Integer idReferencia,
                                Integer unidades, BigDecimal montoUnitario, BigDecimal total) {
+
         PagoConcepto concepto = new PagoConcepto();
         concepto.setPago(pago);
         concepto.setTipoConcepto(TipoConcepto.valueOf(tipo));
-        concepto.setIdReferencia(idReferencia);
         concepto.setUnidades(unidades);
         concepto.setMontoUnitario(montoUnitario);
         concepto.setTotal(total);
+
+        // Asignar la entidad correspondiente según el tipo
+        switch (tipo) {
+            case "CATEGORIA" -> {
+                if (idReferencia != null) {
+                    categoriaRepository.findById(idReferencia)
+                            .ifPresent(concepto::setCategoria);
+                }
+            }
+            case "CATEGORIA_ZONA" -> {
+                if (idReferencia != null) {
+                    categoriaZonaUocraRepository.findById(idReferencia)
+                            .ifPresent(concepto::setCategoriaZonaUocra);
+                }
+            }
+            case "BONIFICACION_FIJA" -> {
+                if (idReferencia != null) {
+                    bonificacionFijaRepository.findById(idReferencia)
+                            .ifPresent(concepto::setBonificacionFija);
+                }
+            }
+            case "BONIFICACION_VARIABLE" -> {
+                if (idReferencia != null) {
+                    bonificacionAreaRepository.findById(idReferencia)
+                            .ifPresent(concepto::setBonificacionAreaLyF);
+                }
+            }
+            case "DESCUENTO" -> {
+                if (idReferencia != null) {
+                    descuentoRepository.findById(idReferencia)
+                            .ifPresent(concepto::setDescuento);
+                }
+            }
+        }
+
         pagoConceptoRepository.save(concepto);
     }
 
-    public PagoSueldoDetalleDTO obtenerPagoConDetalle(Integer idPago){
+    public PagoSueldoDetalleDTO obtenerPagoConDetalle(Integer idPago) {
         PagoSueldo pago = pagoSueldoRepository.findById(Long.valueOf(idPago))
-                .orElseThrow(() -> new RuntimeException("Pago de concepto no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Pago no encontrado"));
+
         PagoSueldoDetalleDTO dto = new PagoSueldoDetalleDTO();
         dto.setIdPago(pago.getIdPago());
         dto.setPeriodoPago(pago.getPeriodoPago());
         dto.setFechaPago(pago.getFechaPago());
-        dto.setTotal(pago.getTotal());
+        dto.setTotal(pago.getTotal_neto());
 
         Empleado e = pago.getEmpleado();
         dto.setLegajoEmpleado(e.getLegajo());
@@ -165,22 +220,54 @@ public class LiquidacionSueldosService {
                     c.setMontoUnitario(pc.getMontoUnitario());
                     c.setTotal(pc.getTotal());
 
-                    // Obtener nombre del concepto según tipo
-                    if (pc.getTipoConcepto() == TipoConcepto.BONIFICACION_FIJA) {
-                        bonificacionFijaRepository.findById(pc.getIdReferencia())
-                                .ifPresent(b -> c.setNombre(b.getNombre()));
-                    } else if (pc.getTipoConcepto() == TipoConcepto.BONIFICACION_VARIABLE) {
-                        c.setNombre("Bonificación Variable");
-                    } else if (pc.getTipoConcepto() == TipoConcepto.DESCUENTO) {
-                        descuentoRepository.findById(pc.getIdReferencia())
-                                .ifPresent(d -> c.setNombre(d.getNombre()));
-                    } else if (pc.getTipoConcepto() == TipoConcepto.CATEGORIA) {
-                        categoriaRepository.findById(pc.getIdReferencia())
-                                .ifPresent(cat -> c.setNombre("Sueldo Básico - " + cat.getNombre()));
+                    // Nombre del concepto según el tipo
+                    switch (pc.getTipoConcepto()) {
+                        case BONIFICACION_FIJA -> {
+                            if (pc.getBonificacionFija() != null) {
+                                c.setNombreConcepto(pc.getBonificacionFija().getNombre());
+                                c.setId_Bonificacion_Fija(pc.getBonificacionFija().getIdBonificacionFija());
+                            }
+                        }
+                        case BONIFICACION_VARIABLE -> {
+                            if (pc.getBonificacionAreaLyF() != null) {
+                                var bonif = pc.getBonificacionAreaLyF();
+                                String nombreArea = bonif.getArea() != null ? bonif.getArea().getNombre() : "Área desconocida";
+                                String nombreCategoria = bonif.getCategoria() != null ? bonif.getCategoria().getNombre() : "Categoría desconocida";
+                                c.setNombreConcepto("Bonificación Variable - " + nombreArea + " / " + nombreCategoria);
+                                c.setId_Bonificacion_Area(bonif.getIdBonificacionVariable());
+                            } else {
+                                c.setNombreConcepto("Bonificación Variable");
+                            }
+                        }
+                        case DESCUENTO -> {
+                            if (pc.getDescuento() != null) {
+                                c.setNombreConcepto(pc.getDescuento().getNombre());
+                                c.setId_Categoria(pc.getDescuento().getIdDescuento());
+                            }
+                        }
+                        case CATEGORIA -> {
+                            if (pc.getCategoria() != null) {
+                                c.setNombreConcepto("Sueldo Básico - " + pc.getCategoria().getNombre());
+                                c.setId_Bonificacion_Fija(pc.getCategoria().getIdCategoria());
+                            } else {
+                                c.setNombreConcepto("Sueldo Básico");
+                            }
+                        }
+                        case CATEGORIA_ZONA -> {
+                            if (pc.getCategoriaZonaUocra() != null) {
+                                c.setNombreConcepto("Categoría-Zona: " + pc.getCategoriaZonaUocra().getCategoria().getNombre()
+                                        + " - " + pc.getCategoriaZonaUocra().getZona().getNombre());
+                                c.setId_Categoria_Zona_Uocra(pc.getCategoriaZonaUocra().getId());
+                            } else {
+                                c.setNombreConcepto("Categoría-Zona");
+                            }
+                        }
+                        default -> c.setNombreConcepto("Concepto desconocido");
                     }
 
                     return c;
-                }).collect(Collectors.toList());
+                })
+                .collect(Collectors.toList());
 
         dto.setConceptos(conceptos);
         return dto;
@@ -197,7 +284,7 @@ public class LiquidacionSueldosService {
             dto.setApellidoEmpleado(pago.getEmpleado().getApellido());
             dto.setPeriodoPago(pago.getPeriodoPago());
             dto.setFechaPago(pago.getFechaPago());
-            dto.setTotal(pago.getTotal());
+            dto.setTotal_neto(pago.getTotal_neto());
             return dto;
         }).collect(Collectors.toList());
     }

@@ -16,10 +16,10 @@ import java.util.stream.Collectors;
 public class ConvenioService {
     private final CategoriaRepository categoriaRepo;
     private final EmpleadoRepository empleadoRepo;
+    private final AreaRepository areaRepo;
     private final BonificacionAreaLyFRepository bonAreaRepo;
     private final BonificacionFijaRepository bonifFijaRepo;
     private final ZonasUocraRepository zonaRepo;
-    private final CategoriasZonasUocraRepository catZonaRepo;
     private final GremioRepository gremioRepo;
     private final CategoriasZonasUocraRepository categoriasZonasUocraRepository;
 
@@ -31,7 +31,9 @@ public class ConvenioService {
                 empleadoRepo.countByGremioAndEstado(gremioRepo.findByNombre("LUZ_Y_FUERZA"), EstadoEmpleado.ACTIVO),
                 categoriaRepo.countByIdCategoriaBetween(1,18),
                 "Convenio para empleados de Luz y Fuerza",
-                "lyf"
+                "lyf",
+                areaRepo.count(),
+                0
         ));
 
         resumenConvenios.add((new ConvenioResumenDTO(
@@ -39,7 +41,9 @@ public class ConvenioService {
                 empleadoRepo.countByGremioAndEstado(gremioRepo.findByNombre("UOCRA"), EstadoEmpleado.ACTIVO),
                 categoriaRepo.countByIdCategoriaGreaterThan(18),
                 "Convenio para empleados de la construcción (UOCRA)",
-                "uocra"
+                "uocra",
+                0,
+                zonaRepo.count()
         )));
 
         return resumenConvenios;
@@ -76,7 +80,7 @@ public class ConvenioService {
 
         List<ZonaDTO> zonasDTO = zonas.stream().map(zona -> {
             // Traer las relaciones categoría-zona
-            List<CategoriasZonasUocra> categoriaZonaList = catZonaRepo.findByZona(zona);
+            List<CategoriasZonasUocra> categoriaZonaList = categoriasZonasUocraRepository.findByZona(zona);
 
             List<CategoriaZonaUocraDTO> categoriasDTO = categoriaZonaList.stream().map(cz -> {
                 Categoria categoria = cz.getCategoria();
@@ -125,5 +129,9 @@ public class ConvenioService {
             entidad.setBasico(dto.getBasico());
             categoriasZonasUocraRepository.save(entidad);
         }
+    }
+
+    public long contarGremios(){
+        return gremioRepo.count();
     }
 }

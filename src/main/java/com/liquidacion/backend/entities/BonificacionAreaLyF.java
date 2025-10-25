@@ -1,5 +1,6 @@
 package com.liquidacion.backend.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,6 +25,7 @@ public class BonificacionAreaLyF {
 
     @ManyToOne
     @JoinColumn(name = "id_categoria")
+    @JsonIgnore
     private Categoria categoria;
 
     private BigDecimal porcentaje;
