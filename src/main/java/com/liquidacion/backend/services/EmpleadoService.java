@@ -6,11 +6,14 @@ import com.liquidacion.backend.DTO.EmpleadoUpdateDTO;
 import com.liquidacion.backend.entities.*;
 import com.liquidacion.backend.mappers.EmpleadoMapper;
 import com.liquidacion.backend.repository.*;
+import com.liquidacion.backend.services.EmpleadoConceptoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,6 +25,7 @@ public class EmpleadoService {
     private final AreaRepository areaRepo;
     private final ZonasUocraRepository zonasUocraRepo;
     private final EmpleadoConceptoRepository conceptoRepo;
+    private final EmpleadoConceptoService empleadoConceptoService;
 
     public List<EmpleadoListDTO> listarTodos(){
         return empleadoRepository.findAll()
@@ -85,7 +89,14 @@ public class EmpleadoService {
 
         if (dto.getNombre() != null)           empleado.setNombre(dto.getNombre());
         if (dto.getApellido() != null)         empleado.setApellido(dto.getApellido());
-        if (dto.getCuil() != null)             empleado.setCuil(dto.getCuil());
+        if (dto.getCuil() != null && !dto.getCuil().equals(empleado.getCuil())){
+            boolean existente = empleadoRepository.existsByCuil(dto.getCuil());
+            if(existente){
+                throw new RuntimeException("El CUIL ya está registrado por otro empleado");
+            }
+            empleado.setCuil(dto.getCuil());
+        }
+
         if (dto.getInicioActividad() != null)  empleado.setInicioActividad(dto.getInicioActividad());
         if (dto.getDomicilio() != null)        empleado.setDomicilio(dto.getDomicilio());
         if (dto.getBanco() != null)            empleado.setBanco(dto.getBanco());
@@ -107,18 +118,9 @@ public class EmpleadoService {
 
         Empleado actualizado = empleadoRepository.save(empleado);
 
-        //Reemplazar conceptos si se mandaron
+        // Reemplazar conceptos si se mandaron usando EmpleadoConceptoService
         if(dto.getConceptosAsignados() != null) {
-            conceptoRepo.deleteAll(actualizado.getConceptos());
-
-            dto.getConceptosAsignados().forEach(cdto -> {
-                EmpleadoConcepto concepto = new EmpleadoConcepto();
-                concepto.setEmpleado(actualizado);
-                concepto.setTipoConcepto(TipoConcepto.valueOf(cdto.getTipoConcepto()));
-                concepto.setIdReferencia(cdto.getIdReferencia());
-                concepto.setUnidades(cdto.getUnidades() != null ? cdto.getUnidades() : 1);
-                conceptoRepo.save(concepto);
-            });
+            empleadoConceptoService.reemplazarConceptos(legajo, dto.getConceptosAsignados());
         }
         return actualizado;
     }

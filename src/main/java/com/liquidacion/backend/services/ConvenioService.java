@@ -134,4 +134,13 @@ public class ConvenioService {
     public long contarGremios(){
         return gremioRepo.count();
     }
+
+    @Transactional(readOnly = true)
+    public CategoriaZonaUocraDTO obtenerBasicoPorCategoriaYZona(Integer idCategoria, Integer idZona) {
+        CategoriasZonasUocra categoriaZona = categoriasZonasUocraRepository
+                .findByCategoria_IdCategoriaAndZona_IdZona(idCategoria, idZona)
+                .orElseThrow(() -> new RuntimeException("No se encontró el básico para la categoría " + idCategoria + " y zona " + idZona));
+        
+        return ConvenioMapper.toCategoriaZonaDTO(categoriaZona);
+    }
 }

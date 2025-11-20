@@ -9,6 +9,7 @@ import com.liquidacion.backend.repository.EmpleadoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -56,6 +57,34 @@ public class EmpleadoConceptoService {
             e.setUnidades(dto.getUnidades());
             return toDTO(empleadoConceptoRepository.save(e));
         });
+    }
+
+    @Transactional
+    public void eliminarTodosPorEmpleado(Integer legajo) {
+        Empleado empleado = empleadoRepository.findById(legajo)
+                .orElseThrow(() -> new RuntimeException("Empleado no encontrado con legajo: " + legajo));
+        empleadoConceptoRepository.deleteAllByEmpleado(empleado);
+    }
+
+    @Transactional
+    public void reemplazarConceptos(Integer legajo, List<EmpleadoConceptoDTO> conceptosDTO) {
+        Empleado empleado = empleadoRepository.findById(legajo)
+                .orElseThrow(() -> new RuntimeException("Empleado no encontrado con legajo: " + legajo));
+        
+        // Eliminar todos los conceptos existentes
+        empleadoConceptoRepository.deleteAllByEmpleado(empleado);
+        
+        // Agregar los nuevos conceptos
+        if (conceptosDTO != null && !conceptosDTO.isEmpty()) {
+            conceptosDTO.forEach(cdto -> {
+                EmpleadoConcepto concepto = new EmpleadoConcepto();
+                concepto.setEmpleado(empleado);
+                concepto.setTipoConcepto(TipoConcepto.valueOf(cdto.getTipoConcepto()));
+                concepto.setIdReferencia(cdto.getIdReferencia());
+                concepto.setUnidades(cdto.getUnidades() != null ? cdto.getUnidades() : 1);
+                empleadoConceptoRepository.save(concepto);
+            });
+        }
     }
 
     private EmpleadoConceptoDTO toDTO(EmpleadoConcepto e) {

@@ -1,6 +1,7 @@
 package com.liquidacion.backend.controller;
 
 import com.liquidacion.backend.DTO.ActualizarBasicoDTO;
+import com.liquidacion.backend.DTO.CategoriaZonaUocraDTO;
 import com.liquidacion.backend.DTO.ConvenioDTO;
 import com.liquidacion.backend.DTO.ConvenioResumenDTO;
 import com.liquidacion.backend.services.ConvenioService;
@@ -46,5 +47,10 @@ public class ConvenioController {
     public ResponseEntity<String> actualizarbasicoUocra(@RequestBody List<ActualizarBasicoDTO> lista) {
         convenioService.actualizarBasicoUocra(lista);
         return ResponseEntity.ok("Básico actualizado correctamente para UOCRA");
+    }
+
+    @GetMapping("/uocra/basico/{idCategoria}/{idZona}")
+    public ResponseEntity<CategoriaZonaUocraDTO> obtenerBasicoUocra(@PathVariable Integer idCategoria, @PathVariable Integer idZona) {
+        return ResponseEntity.ok(convenioService.obtenerBasicoPorCategoriaYZona(idCategoria, idZona));
     }
 }
