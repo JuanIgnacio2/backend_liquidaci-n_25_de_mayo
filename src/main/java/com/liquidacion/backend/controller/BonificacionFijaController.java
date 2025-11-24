@@ -1,7 +1,7 @@
 package com.liquidacion.backend.controller;
 
-import com.liquidacion.backend.DTO.BonificacionFijaDTO;
-import com.liquidacion.backend.services.BonificacionFijaService;
+import com.liquidacion.backend.DTO.ConceptosLyFDTO;
+import com.liquidacion.backend.services.ConceptosLyFService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,32 +13,32 @@ import java.util.List;
 @RequestMapping("/api/bonificaciones-fijas")
 @RequiredArgsConstructor
 public class BonificacionFijaController {
-    private final BonificacionFijaService bonFijaServ;
+    private final ConceptosLyFService bonFijaServ;
 
     @GetMapping
-    public ResponseEntity<List<BonificacionFijaDTO>> listar(){
+    public ResponseEntity<List<ConceptosLyFDTO>> listar(){
         return ResponseEntity.ok(bonFijaServ.listar());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<BonificacionFijaDTO> buscar(@PathVariable int id){
+    public ResponseEntity<ConceptosLyFDTO> buscar(@PathVariable int id){
         return ResponseEntity.ok(bonFijaServ.buscar(id));
     }
 
     @PostMapping
-    public ResponseEntity<BonificacionFijaDTO> crear(@Valid @RequestBody BonificacionFijaDTO bonFijaDTO){
+    public ResponseEntity<ConceptosLyFDTO> crear(@Valid @RequestBody ConceptosLyFDTO bonFijaDTO){
         return ResponseEntity.ok(bonFijaServ.crear(bonFijaDTO));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<BonificacionFijaDTO> actualizar(
+    public ResponseEntity<ConceptosLyFDTO> actualizar(
             @PathVariable Integer id,
-            @Valid @RequestBody BonificacionFijaDTO bonFijaDTO){
+            @Valid @RequestBody ConceptosLyFDTO bonFijaDTO){
         return ResponseEntity.ok(bonFijaServ.actualizar(id,bonFijaDTO));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<BonificacionFijaDTO> eliminar(@PathVariable Integer id){
+    public ResponseEntity<ConceptosLyFDTO> eliminar(@PathVariable Integer id){
         bonFijaServ.eliminar(id);
         return ResponseEntity.ok().build();
     }

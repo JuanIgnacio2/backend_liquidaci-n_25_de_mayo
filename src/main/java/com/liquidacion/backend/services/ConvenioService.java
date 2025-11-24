@@ -18,7 +18,7 @@ public class ConvenioService {
     private final EmpleadoRepository empleadoRepo;
     private final AreaRepository areaRepo;
     private final BonificacionAreaLyFRepository bonAreaRepo;
-    private final BonificacionFijaRepository bonifFijaRepo;
+    private final ConceptosLyFRepository bonifFijaRepo;
     private final ZonasUocraRepository zonaRepo;
     private final GremioRepository gremioRepo;
     private final CategoriasZonasUocraRepository categoriasZonasUocraRepository;
@@ -65,7 +65,7 @@ public class ConvenioService {
 
         dto.setBonificacionesFijas(bonifFijaRepo.findAll()
                 .stream()
-                .map(ConvenioMapper::toBonificacionFijaDTO)
+                .map(ConvenioMapper::toConceptosLyFDTO)
                 .collect(Collectors.toList()));
 
         return dto;

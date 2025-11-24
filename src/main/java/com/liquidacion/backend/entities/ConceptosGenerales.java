@@ -8,15 +8,15 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "bonificaciones_fijas")
+@Table(name = "conceptos_generales")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class BonificacionFija {
+public class ConceptosGenerales {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_bonificacion_fija")
-    private Integer idBonificacionFija;
+    @Column(name = "id_conceptos_generales")
+    private Integer idConceptosLyf;
 
     @Column(nullable = false, unique = true)
     private String nombre;

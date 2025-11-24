@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class BonificacionFijaDTO {
+public class ConceptosUocraDTO {
     private Integer id;
     private String nombre;
     private BigDecimal porcentaje;

@@ -2,8 +2,9 @@ package com.liquidacion.backend.entities;
 
 public enum TipoConcepto {
     CATEGORIA,
-    BONIFICACION_FIJA,
-    BONIFICACION_VARIABLE,
+    CONCEPTO_LYF,
+    CONCEPTO_UOCRA,
+    BONIFICACION_AREA,
     DESCUENTO,
     CATEGORIA_ZONA
 }

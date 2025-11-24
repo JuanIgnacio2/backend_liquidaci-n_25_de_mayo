@@ -29,9 +29,9 @@ public class ConvenioMapper {
         return dto;
     }
 
-    public static BonificacionFijaDTO toBonificacionFijaDTO(BonificacionFija bonif) {
-        BonificacionFijaDTO dto = new BonificacionFijaDTO();
-        dto.setId(bonif.getIdBonificacionFija());
+    public static ConceptosLyFDTO toConceptosLyFDTO(ConceptosLyF bonif) {
+        ConceptosLyFDTO dto = new ConceptosLyFDTO();
+        dto.setId(bonif.getIdConceptosLyf());
         dto.setNombre(bonif.getNombre());
         dto.setPorcentaje(bonif.getPorcentaje());
         return dto;

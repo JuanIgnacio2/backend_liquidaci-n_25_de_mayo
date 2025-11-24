@@ -32,7 +32,7 @@ public class PagoConcepto {
     // Referencia a Bonificación Fija
     @ManyToOne
     @JoinColumn(name = "id_bonificacion_fija")
-    private BonificacionFija bonificacionFija;
+    private ConceptosLyF conceptosLyF;
 
     // Referencia a Bonificación Área Luz y Fuerza
     @ManyToOne

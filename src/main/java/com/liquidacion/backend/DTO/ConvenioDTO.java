@@ -9,6 +9,6 @@ public class ConvenioDTO {
     private String nombreConvenio; // "LUZ Y FUERZA" o "UOCRA"
     private List<CategoriaListDTO> categorias;
     private List<BonificacionAreaDTO> bonificacionesAreas; // solo LYF
-    private List<BonificacionFijaDTO> bonificacionesFijas; // solo LYF
+    private List<ConceptosLyFDTO> bonificacionesFijas; // solo LYF
     private List<ZonaDTO> zonas; // solo UOCRA
 }

@@ -8,9 +8,10 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-public class BonificacionFijaCreateDTO {
+public class ConceptosGeneralesCreateDTO {
     @NotBlank
     private String nombre;
-    @NotNull @Positive
+    @NotNull
+    @Positive
     private BigDecimal porcentaje;
 }

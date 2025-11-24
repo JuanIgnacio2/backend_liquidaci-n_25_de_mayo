@@ -17,7 +17,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class LiquidacionSueldosService {
     private final EmpleadoRepository empleadoRepository;
-    private final BonificacionFijaRepository bonificacionFijaRepository;
+    private final ConceptosLyFRepository conceptosLyFRepository;
+    private final ConceptosUocraRepository conceptosUocraRepository;
     private final BonificacionAreaLyFRepository bonificacionAreaRepository;
     private final DescuentoRepository descuentoRepository;
     private final PagoSueldoRepository pagoSueldoRepository;
@@ -90,7 +91,7 @@ public class LiquidacionSueldosService {
                     BigDecimal monto = basicoReferencia.multiply(bonif.getPorcentaje().divide(BigDecimal.valueOf(100)));
                     totalBonificaciones = totalBonificaciones.add(monto);
 
-                    crearConcepto(pago, TipoConcepto.BONIFICACION_VARIABLE.name(),
+                    crearConcepto(pago, TipoConcepto.BONIFICACION_AREA.name(),
                             bonif.getIdBonificacionVariable(), 1, monto, monto);
                 }
             }
@@ -100,17 +101,23 @@ public class LiquidacionSueldosService {
         for (ConceptoInputDTO conceptoDTO : dto.getConceptos()) {
 
             String tipo = conceptoDTO.getTipoConcepto();
-            if(tipo.equals("CATEGORIA") || tipo.equals("BONIFICACION_VARIABLE")) continue;
+            if(tipo.equals("CATEGORIA") || tipo.equals("BONIFICACION_AREA")) continue;
             Integer idRef = conceptoDTO.getIdReferencia();
             Integer unidades = Optional.ofNullable(conceptoDTO.getUnidades()).orElse(1);
 
             BigDecimal montoUnitario = BigDecimal.ZERO;
 
             switch (tipo) {
-                case "BONIFICACION_FIJA" -> {
-                    BonificacionFija bonFija = bonificacionFijaRepository.findById(idRef)
-                            .orElseThrow(() -> new RuntimeException("Bonificación fija no encontrada"));
-                    montoUnitario = basicoReferencia.multiply(bonFija.getPorcentaje().divide(BigDecimal.valueOf(100)));
+                case "CONCEPTO_LYF" -> {
+                    ConceptosLyF conLyF = conceptosLyFRepository.findById(idRef)
+                            .orElseThrow(() -> new RuntimeException("Concepto no encontrado"));
+                    montoUnitario = basicoReferencia.multiply(conLyF.getPorcentaje().divide(BigDecimal.valueOf(100)));
+                    totalBonificaciones = totalBonificaciones.add(montoUnitario.multiply(BigDecimal.valueOf(unidades)));
+                }
+                case "CONCEPTO_UOCRA" -> {
+                    ConceptosUocra conUocra = conceptosUocraRepository.findById(idRef)
+                            .orElseThrow(() -> new RuntimeException("Concepto no encontrado"));
+                    montoUnitario = basicoReferencia.multiply(conUocra.getPorcentaje().divide(BigDecimal.valueOf(100)));
                     totalBonificaciones = totalBonificaciones.add(montoUnitario.multiply(BigDecimal.valueOf(unidades)));
                 }
                 case "DESCUENTO" -> {
@@ -174,11 +181,11 @@ public class LiquidacionSueldosService {
             }
             case "BONIFICACION_FIJA" -> {
                 if (idReferencia != null) {
-                    bonificacionFijaRepository.findById(idReferencia)
-                            .ifPresent(concepto::setBonificacionFija);
+                    conceptosLyFRepository.findById(idReferencia)
+                            .ifPresent(concepto::setConceptosLyF);
                 }
             }
-            case "BONIFICACION_VARIABLE" -> {
+            case "BONIFICACION_AREA" -> {
                 if (idReferencia != null) {
                     bonificacionAreaRepository.findById(idReferencia)
                             .ifPresent(concepto::setBonificacionAreaLyF);
@@ -222,13 +229,13 @@ public class LiquidacionSueldosService {
 
                     // Nombre del concepto según el tipo
                     switch (pc.getTipoConcepto()) {
-                        case BONIFICACION_FIJA -> {
-                            if (pc.getBonificacionFija() != null) {
-                                c.setNombreConcepto(pc.getBonificacionFija().getNombre());
-                                c.setId_Bonificacion_Fija(pc.getBonificacionFija().getIdBonificacionFija());
+                        case CONCEPTO_LYF -> {
+                            if (pc.getConceptosLyF() != null) {
+                                c.setNombreConcepto(pc.getConceptosLyF().getNombre());
+                                c.setId_Bonificacion_Fija(pc.getConceptosLyF().getIdConceptosLyf());
                             }
                         }
-                        case BONIFICACION_VARIABLE -> {
+                        case BONIFICACION_AREA -> {
                             if (pc.getBonificacionAreaLyF() != null) {
                                 var bonif = pc.getBonificacionAreaLyF();
                                 String nombreArea = bonif.getArea() != null ? bonif.getArea().getNombre() : "Área desconocida";

@@ -1,7 +1,5 @@
 package com.liquidacion.backend.controller;
 
-import com.liquidacion.backend.DTO.BonificacionFijaDTO;
-import com.liquidacion.backend.DTO.DescuentoDTO;
 import com.liquidacion.backend.entities.Descuentos;
 import com.liquidacion.backend.services.DescuentoService;
 import lombok.RequiredArgsConstructor;
