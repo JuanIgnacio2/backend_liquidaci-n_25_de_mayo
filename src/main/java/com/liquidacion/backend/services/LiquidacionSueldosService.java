@@ -2,12 +2,14 @@ package com.liquidacion.backend.services;
 
 import com.liquidacion.backend.DTO.*;
 import com.liquidacion.backend.entities.*;
+import com.liquidacion.backend.exception.LiquidacionDuplicadaException;
 import com.liquidacion.backend.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -37,18 +39,40 @@ public class LiquidacionSueldosService {
         return pagoSueldoRepository.findByEmpleado(empleado);
     }
 
+    public List<PagoSueldo> listarPagosPorPeriodo(String periodo){
+        return pagoSueldoRepository.findByPeriodoPago(periodo);
+    }
+
+    public boolean existeLiquidacionPorPeriodo(Integer legajo, String periodoPago) {
+        return pagoSueldoRepository.existsByEmpleado_LegajoAndPeriodoPago(legajo, periodoPago);
+    }
+
+    public Optional<PagoSueldo> obtenerLiquidacionPorPeriodo(Integer legajo, String periodoPago) {
+        return pagoSueldoRepository.findByEmpleado_LegajoAndPeriodoPago(legajo, periodoPago);
+    }
+
     @Transactional
     public PagoSueldo liquidarSueldo(LiquidacionSueldoDTO dto, LocalDate fechaPago) {
         Empleado empleado = empleadoRepository.findById(dto.getLegajo())
                 .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
+
+        // Verificar si ya existe una liquidación para este empleado en el periodo
+        if (existeLiquidacionPorPeriodo(dto.getLegajo(), dto.getPeriodoPago())) {
+            throw new LiquidacionDuplicadaException("Ya existe una liquidación para el empleado " + dto.getLegajo() 
+                    + " en el periodo " + dto.getPeriodoPago());
+        }
 
         String gremio = empleado.getGremio().getNombre().toUpperCase();
         BigDecimal basico;
         TipoConcepto tipoBasico;
 
         if (gremio.contains("UOCRA")) {
+            if (empleado.getEmpleadoZona() == null || empleado.getEmpleadoZona().getZona() == null) {
+                throw new RuntimeException("El empleado UOCRA no tiene zona asignada");
+            }
+            ZonasUocra zona = empleado.getEmpleadoZona().getZona();
             CategoriasZonasUocra categoriaZona = categoriaZonaUocraRepository
-                    .findByCategoriaAndZona(empleado.getCategoria(), empleado.getZona())
+                    .findByCategoriaAndZona(empleado.getCategoria(), zona)
                     .orElseThrow(() -> new RuntimeException("No se encontró categoría-zona para UOCRA"));
 
             basico = categoriaZona.getBasico();
@@ -88,7 +112,7 @@ public class LiquidacionSueldosService {
                         );
 
                 for (BonificacionAreaLyF bonif : bonificaciones) {
-                    BigDecimal monto = basicoReferencia.multiply(bonif.getPorcentaje().divide(BigDecimal.valueOf(100)));
+                    BigDecimal monto = basicoReferencia.multiply(bonif.getPorcentaje().divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
                     totalBonificaciones = totalBonificaciones.add(monto);
 
                     crearConcepto(pago, TipoConcepto.BONIFICACION_AREA.name(),
@@ -111,20 +135,20 @@ public class LiquidacionSueldosService {
                 case "CONCEPTO_LYF" -> {
                     ConceptosLyF conLyF = conceptosLyFRepository.findById(idRef)
                             .orElseThrow(() -> new RuntimeException("Concepto no encontrado"));
-                    montoUnitario = basicoReferencia.multiply(conLyF.getPorcentaje().divide(BigDecimal.valueOf(100)));
+                    montoUnitario = basicoReferencia.multiply(conLyF.getPorcentaje().divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
                     totalBonificaciones = totalBonificaciones.add(montoUnitario.multiply(BigDecimal.valueOf(unidades)));
                 }
                 case "CONCEPTO_UOCRA" -> {
                     ConceptosUocra conUocra = conceptosUocraRepository.findById(idRef)
                             .orElseThrow(() -> new RuntimeException("Concepto no encontrado"));
-                    montoUnitario = basicoReferencia.multiply(conUocra.getPorcentaje().divide(BigDecimal.valueOf(100)));
+                    montoUnitario = basicoReferencia.multiply(conUocra.getPorcentaje().divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
                     totalBonificaciones = totalBonificaciones.add(montoUnitario.multiply(BigDecimal.valueOf(unidades)));
                 }
                 case "DESCUENTO" -> {
                     Descuentos desc = descuentoRepository.findById(idRef)
                             .orElseThrow(() -> new RuntimeException("Descuento no encontrado"));
                     BigDecimal base = basico.add(totalBonificaciones);
-                    montoUnitario = base.multiply(desc.getPorcentaje().divide(BigDecimal.valueOf(100)));
+                    montoUnitario = base.multiply(desc.getPorcentaje().divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
                     totalDescuentos = totalDescuentos.add(montoUnitario.multiply(BigDecimal.valueOf(unidades)));
                 }
                 default -> {}
@@ -295,4 +319,84 @@ public class LiquidacionSueldosService {
             return dto;
         }).collect(Collectors.toList());
     }
+
+    public List<PagoSueldoResumenDTO> listarUltimos4Pagos() {
+        List<PagoSueldo> pagos = pagoSueldoRepository.findTop4ByOrderByFechaPagoDesc();
+
+        return pagos.stream().map(pago -> {
+            PagoSueldoResumenDTO dto = new PagoSueldoResumenDTO();
+            dto.setIdPago(pago.getIdPago());
+            dto.setLegajoEmpleado(pago.getEmpleado().getLegajo());
+            dto.setNombreEmpleado(pago.getEmpleado().getNombre());
+            dto.setApellidoEmpleado(pago.getEmpleado().getApellido());
+            dto.setPeriodoPago(pago.getPeriodoPago());
+            dto.setFechaPago(pago.getFechaPago());
+            dto.setTotal_neto(pago.getTotal_neto());
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
+    public DashboardLiquidacionesDTO obtenerDashboardMesActual() {
+
+        // Obtener periodo actual YYYY-MM
+        LocalDate hoy = LocalDate.now();
+        String periodoActual = hoy.getYear() + "-" + String.format("%02d", hoy.getMonthValue());
+
+        // Pagos hechos este periodo
+        List<PagoSueldo> pagosMes = pagoSueldoRepository.findByPeriodoPago(periodoActual);
+
+        BigDecimal totalBrutoMes = pagosMes.stream()
+                .map(PagoSueldo::getTotal_bruto)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalNetoMes = pagosMes.stream()
+                .map(PagoSueldo::getTotal_neto)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Total empleados activos (o todos, según tu modelo)
+        long totalEmpleados = empleadoRepository.count();
+
+        int cantidadHechas = pagosMes.size();
+
+        int pendientes = (int) (totalEmpleados - cantidadHechas);
+        if (pendientes < 0) pendientes = 0;
+
+        DashboardLiquidacionesDTO dto = new DashboardLiquidacionesDTO();
+        dto.setTotalBrutoMes(totalBrutoMes);
+        dto.setTotalNetoMes(totalNetoMes);
+        dto.setCantidadEmpleados((int) totalEmpleados);
+        dto.setCantidadLiquidacionesHechas(cantidadHechas);
+        dto.setCantidadLiquidacionesPendientes(pendientes);
+
+        return dto;
+    }
+
+    public DashboardLiquidacionesDTO obtenerDashboardPorPeriodo(String periodo) {
+
+        List<PagoSueldo> pagosMes = pagoSueldoRepository.findByPeriodoPago(periodo);
+
+        BigDecimal totalBrutoMes = pagosMes.stream()
+                .map(PagoSueldo::getTotal_bruto)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalNetoMes = pagosMes.stream()
+                .map(PagoSueldo::getTotal_neto)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        long totalEmpleados = empleadoRepository.count();
+        int cantidadHechas = pagosMes.size();
+
+        int pendientes = (int) (totalEmpleados - cantidadHechas);
+        if (pendientes < 0) pendientes = 0;
+
+        DashboardLiquidacionesDTO dto = new DashboardLiquidacionesDTO();
+        dto.setTotalBrutoMes(totalBrutoMes);
+        dto.setTotalNetoMes(totalNetoMes);
+        dto.setCantidadEmpleados((int) totalEmpleados);
+        dto.setCantidadLiquidacionesHechas(cantidadHechas);
+        dto.setCantidadLiquidacionesPendientes(pendientes);
+
+        return dto;
+    }
+
 }

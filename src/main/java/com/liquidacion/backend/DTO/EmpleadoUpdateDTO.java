@@ -22,7 +22,7 @@ public class EmpleadoUpdateDTO {
     private List<Integer> idAreas;
     private String sexo;
     private Gremio gremio;
-    private Integer idZona; // Opcional (UOCRA)
+    private Integer idZonaUocra; // Opcional (UOCRA)
 
     private EstadoEmpleado estado; // Se puede cambiar en update
 

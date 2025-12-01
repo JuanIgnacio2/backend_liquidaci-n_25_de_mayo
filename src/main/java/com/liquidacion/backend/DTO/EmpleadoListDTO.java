@@ -24,7 +24,7 @@ public class EmpleadoListDTO {
     private List<Integer> idAreas;
     private List<String> nombreAreas;
 
-    private Integer idZona;       // Aplica para UOCRA
+    private Integer idZonaUocra;       // Aplica para UOCRA
     private String nombreZona;    // Aplica para UOCRA
 
     private List<EmpleadoConceptoDTO> conceptosAsignados;

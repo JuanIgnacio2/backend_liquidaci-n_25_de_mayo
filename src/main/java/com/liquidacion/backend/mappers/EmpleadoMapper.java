@@ -33,9 +33,9 @@ public class EmpleadoMapper {
             dto.setNombreAreas(e.getAreas().stream().map(Area::getNombre).collect(Collectors.toList()));
         }
 
-        if (e.getZona() != null) {
-            dto.setIdZona(e.getZona().getIdZona());
-            dto.setNombreZona(e.getZona().getNombre());
+        if (e.getEmpleadoZona() != null && e.getEmpleadoZona().getZona() != null) {
+            dto.setIdZonaUocra(e.getEmpleadoZona().getZona().getIdZona());
+            dto.setNombreZona(e.getEmpleadoZona().getZona().getNombre());
         }
 
         dto.setGremio(GremioMapper.toDTO(e.getGremio()));
@@ -74,7 +74,10 @@ public class EmpleadoMapper {
         }
 
         if (zona != null) {
-            empleado.setZona(zona);
+            EmpleadoZona empleadoZona = new EmpleadoZona();
+            empleadoZona.setEmpleado(empleado);
+            empleadoZona.setZona(zona);
+            empleado.setEmpleadoZona(empleadoZona);
         }
 
         return empleado;
@@ -135,7 +138,15 @@ public class EmpleadoMapper {
         empleado.setGremio(gremio);
         empleado.setSexo(dto.getSexo());
         empleado.setEstado(dto.getEstado());
-        empleado.setZona(zona);
+        
+        // Crear EmpleadoZona para la relación con ZonasUocra
+        if (zona != null) {
+            EmpleadoZona empleadoZona = new EmpleadoZona();
+            empleadoZona.setEmpleado(empleado);
+            empleadoZona.setZona(zona);
+            empleado.setEmpleadoZona(empleadoZona);
+        }
+        
         return empleado;
     }
 }

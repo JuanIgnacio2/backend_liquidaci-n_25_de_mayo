@@ -1,17 +1,25 @@
 package com.liquidacion.backend.DTO;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-@AllArgsConstructor
-@NoArgsConstructor
+
 @Data
-public class CategoriaZonaUocraDTO {
+@NoArgsConstructor
+@AllArgsConstructor
+public class CategoriaZonaUocraCreateDTO {
+    @NotNull
     private Integer idCategoria;
-    private String nombreCategoria;
-    private Integer id_zona;
-    private String nombreZona;
+    
+    @NotNull
+    private Integer idZona;
+    
+    @NotNull
     private BigDecimal basico;
 }
+
+
+

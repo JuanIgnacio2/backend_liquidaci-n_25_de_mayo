@@ -1,5 +1,6 @@
 package com.liquidacion.backend.controller;
 
+import com.liquidacion.backend.DTO.DashboardLiquidacionesDTO;
 import com.liquidacion.backend.DTO.LiquidacionSueldoDTO;
 import com.liquidacion.backend.DTO.PagoSueldoResumenDTO;
 import com.liquidacion.backend.DTO.PagoSueldoDetalleDTO;
@@ -42,5 +43,25 @@ public class LiquidacionController {
     @GetMapping("/empleado/{legajo}")
     public List<PagoSueldo> listarPagosPorEmpleado(@PathVariable Integer legajo){
         return liquidacionSueldosService.listarPagosPorEmpleado(legajo);
+    }
+
+    @GetMapping("/periodo/{periodo}")
+    public List<PagoSueldo> listarPagosPorPeriodo(@PathVariable String periodo) {
+        return liquidacionSueldosService.listarPagosPorPeriodo(periodo);
+    }
+
+    @GetMapping("/ultimos")
+    public List<PagoSueldoResumenDTO> listarPagosPorUltimos() {
+        return liquidacionSueldosService.listarUltimos4Pagos();
+    }
+
+    @GetMapping("/dashboard/mes-actual")
+    public DashboardLiquidacionesDTO obtenerDashboardMesActual() {
+        return liquidacionSueldosService.obtenerDashboardMesActual();
+    }
+
+    @GetMapping("/dashboard/{periodo}")
+    public DashboardLiquidacionesDTO obtenerDashboardPorPeriodo(@PathVariable String periodo) {
+        return liquidacionSueldosService.obtenerDashboardPorPeriodo(periodo);
     }
 }

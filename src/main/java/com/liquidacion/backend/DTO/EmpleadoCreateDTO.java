@@ -45,7 +45,7 @@ public class EmpleadoCreateDTO {
     @NotNull
     private Integer idGremio;
 
-    private Integer idZona; // Opcional (solo si gremio == UOCRA)
+    private Integer idZonaUocra;
 
     private EstadoEmpleado estado;
 

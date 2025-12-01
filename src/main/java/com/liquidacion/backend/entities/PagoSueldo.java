@@ -1,5 +1,6 @@
 package com.liquidacion.backend.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -33,10 +34,12 @@ public class PagoSueldo {
     private BigDecimal total_neto;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "legajo")
     private Empleado empleado;
 
     @OneToMany(mappedBy = "pago", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
+    @JsonIgnore
     private List<PagoConcepto> pagoConceptos = new ArrayList<>();
 }

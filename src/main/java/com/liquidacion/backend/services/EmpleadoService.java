@@ -6,14 +6,11 @@ import com.liquidacion.backend.DTO.EmpleadoUpdateDTO;
 import com.liquidacion.backend.entities.*;
 import com.liquidacion.backend.mappers.EmpleadoMapper;
 import com.liquidacion.backend.repository.*;
-import com.liquidacion.backend.services.EmpleadoConceptoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -52,7 +49,10 @@ public class EmpleadoService {
 
         if (gremio.getNombre().equalsIgnoreCase("UOCRA")) {
             // UOCRA usa zona única
-            ZonasUocra zona = zonasUocraRepo.findById(dto.getIdZona())
+            if (dto.getIdZonaUocra() == null) {
+                throw new RuntimeException("La zona UOCRA es requerida");
+            }
+            ZonasUocra zona = zonasUocraRepo.findById(dto.getIdZonaUocra())
                     .orElseThrow(() -> new RuntimeException("La zona no existe"));
             empleado = EmpleadoMapper.toEntityUocra(dto, categoria, gremio, zona);
         }
@@ -110,6 +110,19 @@ public class EmpleadoService {
         if (dto.getIdAreas() != null && !dto.getIdAreas().isEmpty()) {
             List<Area> area = areaRepo.findAllById(dto.getIdAreas());
             empleado.setAreas(area);
+        }
+
+        // Actualizar zona UOCRA si se proporciona
+        if (dto.getIdZonaUocra() != null) {
+            ZonasUocra zona = zonasUocraRepo.findById(dto.getIdZonaUocra())
+                    .orElseThrow(() -> new RuntimeException("La zona no existe"));
+            EmpleadoZona empleadoZona = empleado.getEmpleadoZona();
+            if (empleadoZona == null) {
+                empleadoZona = new EmpleadoZona();
+                empleadoZona.setEmpleado(empleado);
+            }
+            empleadoZona.setZona(zona);
+            empleado.setEmpleadoZona(empleadoZona);
         }
 
         if (dto.getEstado() != null)           empleado.setEstado(dto.getEstado());

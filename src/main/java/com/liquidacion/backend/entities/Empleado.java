@@ -42,10 +42,6 @@ public class Empleado {
     @JoinColumn(name = "id_gremio", nullable = false)
     private Gremio gremio;
 
-    @ManyToOne
-    @JoinColumn(name = "id_zona")
-    private ZonasUocra zona; // solo aplica a UOCRA
-
     @OneToMany(mappedBy = "empleado", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<PagoSueldo> pagos;
@@ -64,4 +60,8 @@ public class Empleado {
 
     @OneToMany(mappedBy = "empleado", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<EmpleadoConcepto> conceptos = new ArrayList<>();
+
+    // Relación con empleado_zona (1 solo registro por empleado)
+    @OneToOne(mappedBy = "empleado", cascade = CascadeType.ALL, orphanRemoval = true)
+    private EmpleadoZona empleadoZona;
 }
