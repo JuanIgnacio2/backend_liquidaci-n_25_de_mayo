@@ -6,6 +6,7 @@ import com.liquidacion.backend.entities.Actividad;
 import com.liquidacion.backend.entities.ReferenciaTipo;
 import com.liquidacion.backend.repository.ActividadRepository;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -76,6 +77,7 @@ public class ActividadService {
     }
 
     private ActividadDTO toDTO(Actividad actividad) {
+        actividad = (Actividad) Hibernate.unproxy(actividad);
         ActividadDTO dto = new ActividadDTO();
         dto.setIdActividad(actividad.getIdActividad());
         dto.setFecha(actividad.getFecha());

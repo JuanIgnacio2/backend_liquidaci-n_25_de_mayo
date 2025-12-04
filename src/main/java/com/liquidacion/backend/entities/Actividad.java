@@ -1,17 +1,22 @@
 package com.liquidacion.backend.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "actividad")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Entity
+@Table(name = "actividad")
+@ToString(exclude = {})      // evita loops
+@EqualsAndHashCode(exclude = {})
 public class Actividad {
 
     @Id
@@ -32,7 +37,8 @@ public class Actividad {
     private String descripcion;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "referencia_tipo", columnDefinition = "referencia_tipo")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "referencia_tipo")
     private ReferenciaTipo referenciaTipo;
 
     @Column(name = "referencia_id")

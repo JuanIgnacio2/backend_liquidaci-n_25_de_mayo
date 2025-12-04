@@ -7,5 +7,3 @@ public enum ReferenciaTipo {
     PAGO,
     EDIT_CONVENIO
 }
-
-
