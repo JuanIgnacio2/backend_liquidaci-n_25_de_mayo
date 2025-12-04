@@ -15,13 +15,4 @@ public class PagoConceptoService {
     public List<PagoConcepto> findAll() {
         return pagoConceptoRepository.findAll();
     }
-
-    public PagoConcepto listarPorPago(Long id) {
-        return pagoConceptoRepository.findById(id)
-                .orElseThrow(()->new RuntimeException("Concepto de pago no encontrado"));
-    }
-
-    public PagoConcepto guardar(PagoConcepto concepto) {
-        return pagoConceptoRepository.save(concepto);
-    }
 }

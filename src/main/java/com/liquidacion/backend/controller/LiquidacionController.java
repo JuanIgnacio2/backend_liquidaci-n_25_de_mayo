@@ -1,10 +1,8 @@
 package com.liquidacion.backend.controller;
 
-import com.liquidacion.backend.DTO.DashboardLiquidacionesDTO;
-import com.liquidacion.backend.DTO.LiquidacionSueldoDTO;
-import com.liquidacion.backend.DTO.PagoSueldoResumenDTO;
-import com.liquidacion.backend.DTO.PagoSueldoDetalleDTO;
+import com.liquidacion.backend.DTO.*;
 import com.liquidacion.backend.entities.PagoSueldo;
+import com.liquidacion.backend.repository.PagoConceptoRepository;
 import com.liquidacion.backend.services.LiquidacionSueldosService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RestController
@@ -20,6 +20,7 @@ import java.util.List;
 public class LiquidacionController {
 
     private final LiquidacionSueldosService liquidacionSueldosService;
+    private final PagoConceptoRepository pagoConceptoRepository;
 
     @GetMapping
     public ResponseEntity<List<PagoSueldoResumenDTO>> listarPagos() {
@@ -63,5 +64,17 @@ public class LiquidacionController {
     @GetMapping("/dashboard/{periodo}")
     public DashboardLiquidacionesDTO obtenerDashboardPorPeriodo(@PathVariable String periodo) {
         return liquidacionSueldosService.obtenerDashboardPorPeriodo(periodo);
+    }
+
+    @GetMapping("/resumen-conceptos/mes-actual")
+    public ResponseEntity<List<ResumenConceptosDTO>> obtenerResumenConceptosMesActual() {
+        List<ResumenConceptosDTO> resumen = liquidacionSueldosService.obtenerResumenConceptosMesActual();
+        return ResponseEntity.ok(resumen);
+    }
+
+    @GetMapping("/resumen-conceptos/{periodo}")
+    public ResponseEntity<List<ResumenConceptosDTO>> obtenerResumenConceptosPorPeriodo(@PathVariable String periodo) {
+        List<ResumenConceptosDTO> resumen = liquidacionSueldosService.obtenerResumenConceptosPorPeriodo(periodo);
+        return ResponseEntity.ok(resumen);
     }
 }

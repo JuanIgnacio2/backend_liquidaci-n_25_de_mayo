@@ -2,7 +2,6 @@ package com.liquidacion.backend.services;
 
 import com.liquidacion.backend.DTO.*;
 import com.liquidacion.backend.entities.*;
-import com.liquidacion.backend.exception.LiquidacionDuplicadaException;
 import com.liquidacion.backend.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +10,10 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -58,7 +60,7 @@ public class LiquidacionSueldosService {
 
         // Verificar si ya existe una liquidación para este empleado en el periodo
         if (existeLiquidacionPorPeriodo(dto.getLegajo(), dto.getPeriodoPago())) {
-            throw new LiquidacionDuplicadaException("Ya existe una liquidación para el empleado " + dto.getLegajo() 
+            throw new RuntimeException("Ya existe una liquidación para el empleado " + dto.getLegajo()
                     + " en el periodo " + dto.getPeriodoPago());
         }
 
@@ -141,7 +143,7 @@ public class LiquidacionSueldosService {
                 case "CONCEPTO_UOCRA" -> {
                     ConceptosUocra conUocra = conceptosUocraRepository.findById(idRef)
                             .orElseThrow(() -> new RuntimeException("Concepto no encontrado"));
-                    montoUnitario = basicoReferencia.multiply(conUocra.getPorcentaje().divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
+                    montoUnitario = basico.multiply(conUocra.getPorcentaje().divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
                     totalBonificaciones = totalBonificaciones.add(montoUnitario.multiply(BigDecimal.valueOf(unidades)));
                 }
                 case "DESCUENTO" -> {
@@ -397,6 +399,91 @@ public class LiquidacionSueldosService {
         dto.setCantidadLiquidacionesPendientes(pendientes);
 
         return dto;
+    }
+
+    public List<ResumenConceptosDTO> obtenerResumenConceptosMesActual() {
+        LocalDate hoy = LocalDate.now();
+        String periodoActual = hoy.getYear() + "-" + String.format("%02d", hoy.getMonthValue());
+        return obtenerResumenConceptosPorPeriodo(periodoActual);
+    }
+
+    public List<ResumenConceptosDTO> obtenerResumenConceptosPorPeriodo(String periodo) {
+        // Obtener todos los pagos del periodo
+        List<PagoSueldo> pagos = pagoSueldoRepository.findByPeriodoPago(periodo);
+
+        // Obtener todos los conceptos de esos pagos
+        List<PagoConcepto> conceptos = pagos.stream()
+                .flatMap(pago -> pagoConceptoRepository.findByPago(pago).stream())
+                .collect(Collectors.toList());
+
+        // Agrupar por nombre y tipo de concepto
+        Map<String, ResumenConceptosDTO> resumenMap = new HashMap<>();
+
+        for (PagoConcepto pc : conceptos) {
+            String nombreConcepto = obtenerNombreConcepto(pc);
+            String clave = nombreConcepto + "|" + pc.getTipoConcepto().name();
+
+            resumenMap.computeIfAbsent(clave, k -> {
+                ResumenConceptosDTO dto = new ResumenConceptosDTO();
+                dto.setNombre(nombreConcepto);
+                dto.setTipoConcepto(pc.getTipoConcepto());
+                dto.setCantidad(0L);
+                dto.setTotalPagado(BigDecimal.ZERO);
+                return dto;
+            });
+
+            ResumenConceptosDTO dto = resumenMap.get(clave);
+            dto.setCantidad(dto.getCantidad() + 1);
+            dto.setTotalPagado(dto.getTotalPagado().add(pc.getTotal()));
+        }
+
+        return new ArrayList<>(resumenMap.values());
+    }
+
+    private String obtenerNombreConcepto(PagoConcepto pc) {
+        switch (pc.getTipoConcepto()) {
+            case CONCEPTO_LYF -> {
+                if (pc.getConceptosLyF() != null) {
+                    return pc.getConceptosLyF().getNombre();
+                }
+                return "Concepto Luz y Fuerza";
+            }
+            case CONCEPTO_UOCRA -> {
+                // No hay referencia directa a ConceptosUocra en PagoConcepto
+                return "Concepto UOCRA";
+            }
+            case BONIFICACION_AREA -> {
+                if (pc.getBonificacionAreaLyF() != null) {
+                    var bonif = pc.getBonificacionAreaLyF();
+                    String nombreArea = bonif.getArea() != null ? bonif.getArea().getNombre() : "Área desconocida";
+                    String nombreCategoria = bonif.getCategoria() != null ? bonif.getCategoria().getNombre() : "Categoría desconocida";
+                    return "Bonificación Area - " + nombreArea + " / " + nombreCategoria;
+                }
+                return "Bonificación Area";
+            }
+            case DESCUENTO -> {
+                if (pc.getDescuento() != null) {
+                    return pc.getDescuento().getNombre();
+                }
+                return "Descuento";
+            }
+            case CATEGORIA -> {
+                if (pc.getCategoria() != null) {
+                    return "Sueldo Básico - " + pc.getCategoria().getNombre();
+                }
+                return "Sueldo Básico";
+            }
+            case CATEGORIA_ZONA -> {
+                if (pc.getCategoriaZonaUocra() != null) {
+                    return "Categoría-Zona: " + pc.getCategoriaZonaUocra().getCategoria().getNombre()
+                            + " - " + pc.getCategoriaZonaUocra().getZona().getNombre();
+                }
+                return "Categoría-Zona";
+            }
+            default -> {
+                return "Concepto desconocido";
+            }
+        }
     }
 
 }
